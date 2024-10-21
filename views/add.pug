@@ -1,0 +1,36 @@
+extends layout
+
+block content
+    div.content
+        div.container
+            h1.text-center.mb-4 Enter maintenance intervention
+                form(action="/add/insert" method="post")
+                    .mb-3
+                        label(for="date" class="form-label") Data:
+                        input(type="date" class="form-control" id="date" name="date" required)
+                    .mb-3
+                        label(for="intervento" class="form-label") Intervento:
+                        textarea(class="form-control" id="intervento" name="intervento" rows="4" required)
+                    .mb-3
+                        label(for="kilometri" class="form-label") Kilometri:
+                        input(type="number" class="form-control" id="kilometri" name="kilometri" required)
+                    .mb-3
+                        label(for="costo" class="form-label") Costo:
+                        input(type="number" class="form-control" id="costo" name="costo" required)
+                    .d-grid
+                        button(type="submit" class="btn btn-primary btn-block") Submit
+
+
+                        //
+                        //DATA : 2024/07/30
+                        //
+                        //    LAVORO EFFETTUATO
+                        //
+                        //- Cambio commutatore gpl / benzina
+                        //- Bracetto anteriore destro
+                        //
+                        //    KILOMETRI AUTO : 218.000
+                        //
+                        //    COSTO : €70
+                        //
+

@@ -1,0 +1,32 @@
+body {
+    height: 100vh;
+    margin: 0;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+.content{
+    background-image: url("muscle-car-retro-vintage-car-sunset-neon-5k-3840x2160-1229.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.content {
+    flex: 1;
+}
+
+a {
+    color: #00B7FF;
+}
