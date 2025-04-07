@@ -6,6 +6,7 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 const indexRouter = require('./routes/index');
 const addRouter = require("./routes/add");
+const dataRouter = require("./routes/data");
 
 const app = express();
 
@@ -18,12 +19,15 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+// Add this line in your app.js where you set up other static paths
+app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
 app.use("/image", express.static(path.join(__dirname, 'public', 'images')));
 app.use("/css", express.static(path.join(__dirname, 'public', 'stylesheets')));
 app.use("/js", express.static(path.join(__dirname, 'public', 'javascripts')));
 
 app.use('/', indexRouter);
-app.use('/add', addRouter)
+app.use('/add', addRouter);
+app.use('/data', dataRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

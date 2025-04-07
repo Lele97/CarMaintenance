@@ -1,36 +1,21 @@
 extends layout
 
 block content
-    div.content
-        div.container
-            h1.text-center.mb-4 Enter maintenance intervention
-                form(action="/add/insert" method="post")
-                    .mb-3
-                        label(for="date" class="form-label") Data:
-                        input(type="date" class="form-control" id="date" name="date" required)
-                    .mb-3
-                        label(for="intervento" class="form-label") Intervento:
-                        textarea(class="form-control" id="intervento" name="intervento" rows="4" required)
-                    .mb-3
-                        label(for="kilometri" class="form-label") Kilometri:
-                        input(type="number" class="form-control" id="kilometri" name="kilometri" required)
-                    .mb-3
-                        label(for="costo" class="form-label") Costo:
-                        input(type="number" class="form-control" id="costo" name="costo" required)
-                    .d-grid
-                        button(type="submit" class="btn btn-primary btn-block") Submit
-
-
-                        //
-                        //DATA : 2024/07/30
-                        //
-                        //    LAVORO EFFETTUATO
-                        //
-                        //- Cambio commutatore gpl / benzina
-                        //- Bracetto anteriore destro
-                        //
-                        //    KILOMETRI AUTO : 218.000
-                        //
-                        //    COSTO : €70
-                        //
-
+    .content.d-flex.align-items-center.justify-content-center
+        .container.bg-light.shadow-lg.rounded.p-5.custom-form
+            h1.text-center.mb-4 Inserisci un nuovo intervento
+            form(action="/add/insert" method="post")
+                .mb-3
+                    label(for="date" class="form-label fw-bold") 📅 Data:
+                    input(type="date" class="form-control" id="date" name="date" required)
+                .mb-3
+                    label(for="intervento" class="form-label fw-bold") 🛠️ Intervento:
+                    textarea(class="form-control" id="intervento" name="intervento" rows="4" required placeholder="Descrizione dell’intervento effettuato...")
+                .mb-3
+                    label(for="kilometri" class="form-label fw-bold") 🚗 Kilometri:
+                    input(type="number" class="form-control" id="kilometri" name="kilometri" required placeholder="Es. 105000")
+                .mb-3
+                    label(for="costo" class="form-label fw-bold") 💸 Costo:
+                    input(type="number" class="form-control" id="costo" name="costo" required placeholder="Es. 150")
+                .d-grid
+                    button(type="submit" class="btn btn-lg shadow-sm btn-save-intervention") Salva Intervento

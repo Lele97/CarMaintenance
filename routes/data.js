@@ -13,9 +13,15 @@ db.on('open', () => {
     console.log('Connected to MongoDB');
 })
 
-/* GET home page. */
-router.get('/', function (req, res, next) {
-    res.render('index', {title: 'Express'});
+router.get('/', async function (req, res, next) {
+    try {
+        const intervention = await Intervention.find(undefined, undefined, undefined)
+        res.render('data', {
+            interventions: intervention
+        });
+    } catch (error) {
+        next(error)
+    }
 });
 
 module.exports = router;

@@ -1,22 +1,16 @@
-footer.footer
-    .container
-        .row
-            .col-md-4
-                h5 Contact Us
-                ul
-                    li: a(href="mailto:gabriele.grandinetti@hotmailcom") Email: gabriele.grandinetti@hotmailcom
-                    li: a(href="tel:+39 3937690141") Phone: +39 393 769 0141
-            .col-md-4
-                h5 Follow Us
-                ul
-                    li: a(href="https://www.facebook.com" target="_blank") Facebook
-                    li: a(href="https://www.twitter.com" target="_blank") Twitter
-                    li: a(href="https://www.instagram.com" target="_blank") Instagram
-            .col-md-4
-                h5 Legal
-                ul
-                    li: a(href="/terms") Terms of Service
-                    li: a(href="/privacy") Privacy Policy
-        .row
-            .col-md-12.text-center
-                p &copy; 2024 Your Company. All rights reserved.
+footer
+    .container-fluid.text-light.py-4.mt-auto.d-flex.justify-content-between.align-items-center
+        //- Left Image
+        img(src="/image/node-js-svgrepo-com.svg" alt="Node.js Logo" style="width: 50px; height: auto;")
+        //- Center Content
+        .text-center.flex-grow-1
+            p.mb-1 &copy; 2025 Your Company Name. All rights reserved.
+            p.small Built with
+                i.bi.bi-suit-heart-fill.text-danger
+                |  using Node.js & Pug
+            div
+                a.text-light.mx-3(href="#") Privacy Policy
+                a.text-light.mx-3(href="#") Terms of Service
+                a.text-light.mx-3(href="#") Contact Us
+        //- Right Image
+        img(src="/image/webstorm-svgrepo-com.svg" alt="WebStorm Logo" style="width: 50px; height: auto;")

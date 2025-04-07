@@ -1,24 +1,14 @@
-header.header
+header
     .container
-        .row
-            .col-md-4
-                a(href="/") Home
-            .col-md-4
-                h1 My Website
-            .col-md-4
-                a(href="/add") Add
-
-                //nav.navbar.navbar-expand-lg.navbar-light.bg-light
-                //    a.navbar-brand(href="#") Brand
-                //    button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation")
-                //        span.navbar-toggler-icon
-                //    .collapse.navbar-collapse#navbarNav
-                //        ul.navbar-nav
-                //            li.nav-item.active
-                //                a.nav-link(href="#") Home
-                //            li.nav-item
-                //                a.nav-link(href="#about") About
-                //            li.nav-item
-                //                a.nav-link(href="#services") Services
-                //            li.nav-item
-                //                a.nav-link(href="#contact") Contact
+        .row.align-items-center
+            // Left: Home Icon
+            .col-md-4.text-center
+                a(href="/" title="Home")
+                    i.bi.bi-house-fill.fs-4.custom-header-i
+            // Center: Website Title
+            .col-md-4.text-center
+                img(src="/image/Car maintenance.png" alt="Website Title" class="img-fluid mx-auto d-block custom-header-img")
+            // Right: Add Content Icon
+            .col-md-4.text-center
+                a(href="/add" title="Add New")
+                    i.bi.bi-plus-circle-fill.fs-4.custom-header-i

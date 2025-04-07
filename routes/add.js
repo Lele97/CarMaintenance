@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Intervention = require('../models/Intervention');
 
-
 /* GET add page. */
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
     res.render('add');
 });
 

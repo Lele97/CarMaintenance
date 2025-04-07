@@ -1,0 +1,19 @@
+extends layout
+
+block content
+    .content
+        .container
+            table.table-interventions
+                thead
+                    tr
+                        th Data
+                        th Intervento
+                        th Kilometri
+                        th Costo
+                tbody
+                    each intervento in interventions
+                        tr
+                            td= intervento.date
+                            td= intervento.intervento
+                            td= intervento.kilometri
+                            td= intervento.costo
