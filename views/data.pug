@@ -3,17 +3,15 @@ extends layout
 block content
     .content
         .container
-            table.table-interventions
-                thead
-                    tr
-                        th Data
-                        th Intervento
-                        th Kilometri
-                        th Costo
-                tbody
-                    each intervento in interventions
-                        tr
-                            td= intervento.date
-                            td= intervento.intervento
-                            td= intervento.kilometri
-                            td= intervento.costo
+            each intervento in interventions
+                .intervention-card
+                    h3= intervento.date
+                    p= intervento.intervento
+                    .info-row
+                        span Chilometri: #{intervento.kilometri}
+                        span Costo: €#{intervento.costo}
+                    .action-row
+                        a.btn-edit(href=`/update/${intervento._id}`) ✏️ Edit
+                        form(method="POST", action=`/delete/${intervento._id}?_method=DELETE`)
+                            input(type="hidden", name="_method", value="DELETE")
+                            button.btn-delete(type="submit") 🗑 Delete
