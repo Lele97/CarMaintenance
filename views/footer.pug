@@ -1,9 +1,11 @@
 footer
     .container-fluid.text-light.py-4.mt-auto.d-flex.justify-content-between.align-items-center
+        .row
         //- Left Image
-        img(src="/image/node-js-svgrepo-com.svg" alt="Node.js Logo" style="width: 50px; height: auto;")
+        .col-md-4
+            img(src="/image/node-js-svgrepo-com.svg" alt="Node.js Logo" style="width: 50px; height: auto;")
         //- Center Content
-        .text-center.flex-grow-1
+        .text-center.flex-grow-1.col-md-4
             p.mb-1 &copy; 2025 Your Company Name. All rights reserved.
             p.small Built with
                 i.bi.bi-suit-heart-fill.text-danger
@@ -13,4 +15,5 @@ footer
                 a.text-light.mx-3(href="#") Terms of Service
                 a.text-light.mx-3(href="#") Contact Us
         //- Right Image
-        img(src="/image/webstorm-svgrepo-com.svg" alt="WebStorm Logo" style="width: 50px; height: auto;")
+        .col-md-4
+            img(src="/image/webstorm-svgrepo-com.svg" alt="WebStorm Logo" style="width: 50px; height: auto;")
