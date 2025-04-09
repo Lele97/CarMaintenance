@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const db = mongoose.connection;
-const Intervention = require('../models/Intervention');
 
 mongoose.connect('mongodb://127.0.0.1:27017/carmaintenance');
 db.on('error', () => {

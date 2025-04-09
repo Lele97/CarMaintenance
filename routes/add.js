@@ -19,16 +19,11 @@ router.post("/insert", async (req, res, next) => {
         kilometri,
         costo
     });
-
     await newIntervention.save().then(() => {
-
         console.log('Request body output '
             + JSON.stringify(req.body));
-
         console.log("Succefully inserted!");
-
         res.redirect('/');
-
     }).catch((err) => {
         console.log(err);
     })
