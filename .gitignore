@@ -36,3 +36,4 @@ coverage/
 # IntelliJ logs (di tanto in tanto appaiono)
 *.iml
 out/
+/package-lock.json
