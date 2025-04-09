@@ -77,10 +77,10 @@ header {
     transition: background 0.3s ease;
 }
 
-
 .custom-header-i {
     color: white;
     transition: color 0.3s ease;
+    font-size: 2rem;
 }
 
 .custom-header-i:hover {
@@ -138,3 +138,74 @@ input.form-control:focus, textarea.form-control:focus {
         opacity: 1;
     }
 }
+
+.intervention-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    backdrop-filter: blur(10px)
+}
+
+.intervention-card:hover {
+    transform: scale(1.01);
+}
+
+.intervention-card h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #212529;
+}
+
+.intervention-card p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #333;
+    white-space: pre-wrap;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 1rem;
+}
+
+.info-row span {
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    padding: 0.4rem 0.8rem;
+}
+
+.action-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-edit,
+.btn-delete {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #fff;
+    background-color: #ff0052;
+    transition: background 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-edit:hover,
+.btn-delete:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+}
+
