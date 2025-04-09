@@ -1,0 +1,50 @@
+extends layout
+
+block content
+    .content.d-flex.align-items-center.justify-content-center
+        .container.bg-light.shadow-lg.rounded.p-5.custom-form
+            h1.text-center.mb-4 Aggiorna Intervento
+            form(action='/update/' + intervention.id method='post')
+                input(type="hidden" name="_method" value="put")
+                .mb-3
+                    label(for="date" class="form-label fw-bold") 📅 Data:
+                    input(
+                        type="date"
+                        class="form-control"
+                        id="date"
+                        name="date"
+                        required
+                        value=intervention.date.toISOString().slice(0, 10)
+                    )
+                .mb-3
+                    label(for="intervento" class="form-label fw-bold") 🛠️ Intervento:
+                    textarea(
+                        class="form-control"
+                        id="intervento"
+                        name="intervento"
+                        rows="4"
+                        required)=intervention.intervento
+                .mb-3
+                    label(for="kilometri" class="form-label fw-bold") 🚗 Kilometri:
+                    input(
+                        type="number"
+                        class="form-control"
+                        id="kilometri"
+                        name="kilometri"
+                        required
+                        placeholder="Es. 105000"
+                        value=intervention.kilometri
+                    )
+                .mb-3
+                    label(for="costo" class="form-label fw-bold") 💸 Costo:
+                    input(
+                        type="number"
+                        class="form-control"
+                        id="costo"
+                        name="costo"
+                        required
+                        placeholder="Es. 150"
+                        value=intervention.costo
+                    )
+                .d-grid
+                    button(type="submit" class="btn btn-lg shadow-sm btn-save-intervention") 🔄 Aggiorna Intervento
