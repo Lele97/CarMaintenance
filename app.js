@@ -27,7 +27,7 @@ app.use("/js", express.static(path.join(__dirname, 'public', 'javascripts')));
 
 app.use('/', indexRouter);
 app.use('/add', addRouter);
-app.use('/data', dataRouter)
+app.use('/data', dataRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
