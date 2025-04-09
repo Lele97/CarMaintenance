@@ -1,3 +1,38 @@
-/node_modules
-/.idea
-/node_modules/
+# Node modules (mai nel repo, sempre nel cuore)
+node_modules/
+
+# IDEs (ognuno ha la sua astronave)
+.idea/
+.vscode/
+
+# Logs (bruciano come meteore, non li trattenere)
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files (ghost file da sistemi operativi)
+.DS_Store
+Thumbs.db
+
+# Environment config (segreti sotto chiave)
+.env
+.env.*.local
+
+# Build artifacts (se in futuro usi Babel, TypeScript, ecc.)
+dist/
+build/
+
+# Optional: blocca il lockfile se preferisci flessibilità di versioni
+# package-lock.json
+
+# Test coverage output
+coverage/
+
+# Sentry sourcemaps, Firebase, ecc. (se usi servizi esterni)
+.sourcemaps/
+.firebase/
+
+# IntelliJ logs (di tanto in tanto appaiono)
+*.iml
+out/
