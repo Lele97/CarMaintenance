@@ -12,6 +12,6 @@ block content
                         span Costo: €#{intervento.costo}
                     .action-row
                         a.btn-edit(href=`/update/${intervento._id}`) ✏️ Edit
-                        form(method="POST", action=`/delete/${intervento._id}?_method=DELETE`)
-                            input(type="hidden", name="_method", value="DELETE")
+                        form(method="post", action='/delete/' + intervento._id)
+                            input(type="hidden", name="_method", value="delete")
                             button.btn-delete(type="submit") 🗑 Delete

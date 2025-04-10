@@ -9,9 +9,7 @@ router.get('/', async function (req, res, next) {
                 date: 1
             }
         })
-        res.render('data', {
-            interventions: intervention
-        });
+        res.status(200).json(intervention)
     } catch (error) {
         next(error)
     }
