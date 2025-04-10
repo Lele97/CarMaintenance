@@ -1,6 +1,6 @@
 // test/routes/add.test.js
 const request = require('supertest');
-const app = require('../../app');
+const app = require('./../app');
 const expect = require('chai').expect;
 
 describe('POST /add/insert', function () {
