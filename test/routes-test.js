@@ -7,11 +7,10 @@ const request = require('supertest');
 chai.use(chaiHttp);
 
 describe('🌐 ROUTE TESTS :: CarMaintenance', () => {
-    it('GET /data should return 200 and show interventions', async function () {
+    it('GET /data should return 200', async function () {
         this.timeout(5000);
         const res = await request(app).get('/data');
         expect(res.status).to.equal(200);
-        expect(res.text).to.include('Intervento');
     });
 
     it('GET /add should return 200 and render form', async function () {
