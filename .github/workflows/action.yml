@@ -1,4 +1,4 @@
-name: GitLab CI/CD Sync
+name: GitLab CI/CD
 
 on:
   push:
