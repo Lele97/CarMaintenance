@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - gitlab
+      - master
   delete:
     branches:
       - gitlab
