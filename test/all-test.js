@@ -1,5 +1,3 @@
-// run-tests.js — Autoplay Mocha Tests When File Is Executed
-
 const Mocha = require('mocha');
 const fs = require('fs');
 const path = require('path');
