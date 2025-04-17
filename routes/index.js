@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const db = mongoose.connection;
+const moment = require('moment')
 
 mongoose.connect('mongodb://127.0.0.1:27017/carmaintenance');
 db.on('error', () => {
@@ -12,12 +13,15 @@ db.on('open', () => {
 })
 
 /* GET home page. */
-router.get('/', async function (req, res, next) {
+router.get('/', async function (req, res) {
     const response = await fetch("http://127.0.0.1:4000/data")
     const interventions = await response.json();
     console.log(interventions);
     res.render('data', {
-        interventions: interventions,
+        interventions:interventions.map(intervention => ({
+            ...intervention,
+            date:moment(intervention.date).format('YYYY-MM-DD')
+        }))
     })
 });
 
