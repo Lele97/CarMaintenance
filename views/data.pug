@@ -11,7 +11,11 @@ block content
                         span Chilometri: #{intervento.kilometri}
                         span Costo: €#{intervento.costo}
                     .action-row
-                        a.btn-edit(href=`/update/${intervento._id}`) ✏️ Edit
-                        form(method="post", action='/delete/' + intervento._id)
+                        a.btn-edit(href=`/update/${intervento._id}`)
+                            span.material-symbols-outlined edit
+                            |  Edit
+                        form(method="post", action=`/delete/${intervento._id}`)
                             input(type="hidden", name="_method", value="delete")
-                            button.btn-delete(type="submit") 🗑 Delete
+                            a.btn-delete(type="submit")
+                                span.material-symbols-outlined delete
+                                |  delete
