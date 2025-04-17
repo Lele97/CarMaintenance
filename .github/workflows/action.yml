@@ -5,6 +5,8 @@ on:
     branches:
       - gitlab
   delete:
+    branches:
+      - gitlab
   pull_request:
 
 jobs:
@@ -13,6 +15,6 @@ jobs:
     steps:
       - uses: keninkujovic/gitlab-sync@2.0.0
         with:
-          gitlab_url: ${secrets.GIT_LAB_URI}
-          username: ${secrets.GIT_LAB_USERNAME}
-          gitlab_pat: ${secrets.GIT_LAB_TOKEN}
+          gitlab_url: ${{ secrets.GIT_LAB_URI }}
+          username: ${{ secrets.GIT_LAB_USERNAME }}
+          gitlab_pat: ${{ secrets.GIT_LAB_TOKEN }}
