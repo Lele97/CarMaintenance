@@ -13,7 +13,7 @@ db.on('open', () => {
 })
 
 /* GET home page. */
-router.get('/', async function (req, res, next) {
+router.get('/', async function (req, res) {
     const response = await fetch("http://127.0.0.1:4000/data")
     const interventions = await response.json();
     console.log(interventions);
