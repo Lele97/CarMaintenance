@@ -12,7 +12,6 @@ const updateRouter = require("./routes/update");
 const deleteRouter = require("./routes/delete");
 const app = express();
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
@@ -22,26 +21,20 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(methodOverride('_method'))
-
-
-// Add this line in your app.js where you set up other static paths
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
 app.use("/image", express.static(path.join(__dirname, 'public', 'images')));
 app.use("/css", express.static(path.join(__dirname, 'public', 'stylesheets')));
 app.use("/js", express.static(path.join(__dirname, 'public', 'javascripts')));
-
 app.use('/', indexRouter);
 app.use('/add', addRouter);
 app.use('/data', dataRouter);
 app.use('/update', updateRouter);
 app.use('/delete', deleteRouter);
 
-// catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
 });
 
-// error handler
 app.use(function (err, req, res) {
     // set locals, only providing error in development
     res.locals.message = err.message;

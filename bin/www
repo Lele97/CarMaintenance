@@ -3,12 +3,10 @@
 /**
  * Module dependencies.
  */
-
 var app = require('../app');
 var debug = require('debug')('carmaintenance:server');
 var http = require('http');
 const ngrok = require('ngrok');
-const dotenv = require('dotenv').config();
 
 /**
  * Get port from environment and store in Express.
