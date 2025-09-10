@@ -9,7 +9,7 @@ db.on('error', () => {
     console.log("connection error")
 });
 db.on('open', () => {
-    console.log('Connected to MongoDB');
+    console.log('🌱Connected to MongoDB');
 })
 
 /* GET home page. */

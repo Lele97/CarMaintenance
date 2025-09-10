@@ -9,12 +9,18 @@ on:
     branches:
       - gitlab
   pull_request:
+    branches:
+      -master
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: keninkujovic/gitlab-sync@2.0.0
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Sync to GitLab
+        uses: keninkujovic/gitlab-sync@2.0.0
         with:
           gitlab_url: ${{ secrets.GIT_LAB_URI }}
           username: ${{ secrets.GIT_LAB_USERNAME }}
