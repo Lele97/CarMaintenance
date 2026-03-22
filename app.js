@@ -18,7 +18,7 @@ app.set('view engine', 'pug');
 app.use(bodyParser.json());
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(methodOverride('_method'))
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
@@ -32,15 +32,18 @@ app.use('/update', updateRouter);
 app.use('/delete', deleteRouter);
 
 app.use(function (req, res, next) {
-    next(createError(404));
+    res.status(404);
+
+    if (req.accepts('html')) {
+        res.render('notfound', { url: req.url });
+        return;
+    }
+    res.type('txt').send('Not found');
 });
 
 app.use(function (err, req, res) {
-    // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // render the error page
     res.status(err.status || 500);
     res.render('error');
 });

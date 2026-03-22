@@ -1,8 +1,11 @@
 extends layout
 
 block content
-    div.content
-        div.container
-            h1= message
-            h2= error.status
-            pre #{error.stack}
+    .content.d-flex.align-items-center.justify-content-center
+        .container.bg-light.shadow-lg.rounded.p-5.custom-form
+            h1.text-danger ⚠️ Errore: #{message}
+            h2.text-muted Status: #{error.status}
+            if error.stack
+                pre.bg-dark.text-white.p-3.rounded.mt-4(style="overflow-x: auto; max-height: 400px; text-align: left;") #{error.stack}
+            div.text-center.mt-4
+                a.btn.btn-lg.shadow-sm.btn-save-intervention(href="/") 🏠 Torna alla Home

@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    .content.d-flex.align-items-center.justify-content-center
+        .container.bg-light.shadow-lg.rounded.p-5.custom-form.text-center
+            h1.display-1.fw-bold.text-danger 404
+            h2.mb-4 🛑 Pagina non trovata!
+            p.lead L'URL #[strong #{url}] che hai cercato non esiste.
+            p Forse la tua auto è uscita fuori strada oppure la pagina è stata rimossa.
+            a.btn.btn-lg.shadow-sm.btn-save-intervention.mt-3(href="/") 🏠 Torna alla Home
