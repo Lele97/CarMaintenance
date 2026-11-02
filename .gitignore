@@ -37,3 +37,4 @@ coverage/
 *.iml
 out/
 /package-lock.json
+.github/agents/*

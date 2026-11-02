@@ -3,38 +3,25 @@
 /**
  * Module dependencies.
  */
+require('dotenv').config();
 var app = require('../app');
 var debug = require('debug')('carmaintenance:server');
 var http = require('http');
-const ngrok = require('ngrok');
+const ngrok = require('@ngrok/ngrok');
 
 /**
  * Get port from environment and store in Express.
  */
 const port = normalizePort(process.env.PORT || 4000);
+const startupType = process.env.STARTUP_TYPE || 'development';
 app.set('port', port);
 
 // Create HTTP server
 const server = http.createServer(app);
 
-// Start the party
-startServer();
-
-async function startServer() {
-  try {
-    server.listen(port, '0.0.0.0');
-
-    server.on('listening', onListening);
-    server.on('error', onError);
-
-    // Connect to ngrok
-    const url = await ngrok.connect({ addr: port, authtoken_from_env: true });
-    console.log(`✨ Tunnel opened at: ${url}`);
-  } catch (err) {
-    console.error('💥 Error starting server:', err);
-    process.exit(1);
-  }
-}
+server.on('error', onError);
+server.on('listening', () => onListening(startupType));
+server.listen(port, '0.0.0.0');
 
 function normalizePort(val) {
   const port = parseInt(val, 10);
@@ -59,8 +46,31 @@ function onError(error) {
   }
 }
 
-function onListening() {
+async function openNgrokTunnel() {
+  const tunnelOptions = { addr: port, authtoken_from_env: true };
+  if (process.env.NGROK_DEBUG === '1') {
+    tunnelOptions.onLogEvent = (message) => console.log(`[ngrok] ${message}`);
+  }
+
+  try {
+    const listener = await ngrok.forward(tunnelOptions);
+    console.log(`ngrok tunnel opened at: ${listener.url()}`);
+    console.log('Open the ngrok inspector at: http://127.0.0.1:4000\n');
+  } catch (error) {
+    const details = error.body && error.body.details && error.body.details.err;
+    console.error('Error opening ngrok tunnel:', details || error.message);
+  }
+}
+
+async function onListening(startupType) {
   const addr = server.address();
   const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
   debug(`🚀 Server listening on ${bind}`);
+
+  if (startupType === 'development') {
+    await openNgrokTunnel();
+  }else {
+    console.log(`Server running in ${startupType} mode. ngrok tunnel not opened.`);
+  }
+
 }
