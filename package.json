@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "mocha",
+    "test": "mocha test/*-test.js --exit --exclude test/all-test.js",
     "build": "echo '🛠️ Nessuna build necessaria per ora'"
   },
   "dependencies": {

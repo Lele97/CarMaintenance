@@ -1,21 +1,125 @@
 extends layout
 
 block content
-    .content.d-flex.align-items-center.justify-content-center
-        .container.bg-light.shadow-lg.rounded.p-5.custom-form
-            h1.text-center.mb-4 Inserisci un nuovo intervento
-            form(action="/add/insert" method="post")
-                .mb-3
-                    label(for="date" class="form-label fw-bold") 📅 Data:
-                    input(type="date" class="form-control" id="date" name="date" required)
-                .mb-3
-                    label(for="intervento" class="form-label fw-bold") 🛠️ Intervento:
-                    textarea(class="form-control" id="intervento" name="intervento" rows="4" required placeholder="Descrizione dell’intervento effettuato...")
-                .mb-3
-                    label(for="kilometri" class="form-label fw-bold") 🚗 Kilometri:
-                    input(type="number" class="form-control" id="kilometri" name="kilometri" required placeholder="Es. 105000")
-                .mb-3
-                    label(for="costo" class="form-label fw-bold") 💸 Costo:
-                    input(type="number" class="form-control" id="costo" name="costo" required placeholder="Es. 150")
-                .d-grid
-                    button(type="submit" class="btn btn-lg shadow-sm btn-save-intervention") Salva Intervento
+  .container.py-5
+    .row.justify-content-center
+      .col-lg-8.col-xl-7
+        .card.custom-form-card.shadow-lg.border-0
+          .card-header.bg-transparent.border-0.pt-4.pb-0.text-center
+            .d-inline-flex.align-items-center.justify-content-center.icon-badge.mb-3
+              i.bi.bi-tools.text-primary.fs-3
+            h1.h3.fw-bold.text-slate-900 Inserisci un nuovo intervento
+            p.text-muted.small Registra la manutenzione effettuata per conservare lo storico del veicolo
+
+          .card-body.p-4.p-md-5
+            if errors && Object.keys(errors).length > 0
+              .alert.alert-danger.rounded-3.mb-4(role="alert")
+                .d-flex.align-items-center.mb-2
+                  i.bi.bi-exclamation-triangle-fill.me-2
+                  strong.fw-bold Si sono verificati alcuni errori:
+                ul.mb-0.ps-3.small
+                  each err in errors
+                    li= err
+
+            form(action="/add/insert" method="post" novalidate)
+              .row.g-3
+                .col-md-6
+                  label.form-label.fw-semibold(for="date")
+                    i.bi.bi-calendar-event.me-1.text-primary
+                    |  Data dell'intervento *
+                  input#date.form-control.custom-input(
+                    type="date"
+                    name="date"
+                    required
+                    value=(formData && formData.date ? formData.date : '')
+                    class=(errors && errors.date ? 'is-invalid' : '')
+                  )
+                  if errors && errors.date
+                    .invalid-feedback= errors.date
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="categoria")
+                    i.bi.bi-tag.me-1.text-primary
+                    |  Categoria *
+                  select#categoria.form-select.custom-input(name="categoria")
+                    each cat in (categories || ['Tagliando', 'Olio e Filtri', 'Freni', 'Pneumatici', 'Batteria', 'Revisione', 'Riparazione Meccanica', 'Carrozzeria', 'Altro'])
+                      option(value=cat selected=(formData && formData.categoria === cat))= cat
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="kilometri")
+                    i.bi.bi-speedometer2.me-1.text-primary
+                    |  Chilometraggio (km) *
+                  input#kilometri.form-control.custom-input(
+                    type="number"
+                    name="kilometri"
+                    min="0"
+                    max="2000000"
+                    placeholder="Es. 105000"
+                    required
+                    value=(formData && formData.kilometri !== undefined ? formData.kilometri : '')
+                    class=(errors && errors.kilometri ? 'is-invalid' : '')
+                  )
+                  if errors && errors.kilometri
+                    .invalid-feedback= errors.kilometri
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="costo")
+                    i.bi.bi-currency-euro.me-1.text-primary
+                    |  Costo totale (€) *
+                  input#costo.form-control.custom-input(
+                    type="number"
+                    step="0.01"
+                    name="costo"
+                    min="0"
+                    max="1000000"
+                    placeholder="Es. 150.00"
+                    required
+                    value=(formData && formData.costo !== undefined ? formData.costo : '')
+                    class=(errors && errors.costo ? 'is-invalid' : '')
+                  )
+                  if errors && errors.costo
+                    .invalid-feedback= errors.costo
+
+                .col-12
+                  label.form-label.fw-semibold(for="intervento")
+                    i.bi.bi-wrench-adjustable.me-1.text-primary
+                    |  Descrizione dell'intervento *
+                  textarea#intervento.form-control.custom-input(
+                    name="intervento"
+                    rows="3"
+                    required
+                    placeholder="Descrivi dettagliatamente l'operazione eseguita..."
+                    class=(errors && errors.intervento ? 'is-invalid' : '')
+                  )=(formData && formData.intervento ? formData.intervento : '')
+                  if errors && errors.intervento
+                    .invalid-feedback= errors.intervento
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="veicolo")
+                    i.bi.bi-car-front.me-1.text-primary
+                    |  Veicolo
+                  input#veicolo.form-control.custom-input(
+                    type="text"
+                    name="veicolo"
+                    placeholder="Es. Volkswagen Golf 7"
+                    value=(formData && formData.veicolo ? formData.veicolo : 'Veicolo Principale')
+                  )
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="note")
+                    i.bi.bi-sticky.me-1.text-primary
+                    |  Note / Officina
+                  input#note.form-control.custom-input(
+                    type="text"
+                    name="note"
+                    placeholder="Es. Officina Rossi, sostituzione filtro abitacolo"
+                    value=(formData && formData.note ? formData.note : '')
+                  )
+
+              .d-flex.align-items-center.justify-content-between.mt-4.pt-3.border-top
+                a.btn.btn-outline-secondary.rounded-pill.px-4(href="/")
+                  i.bi.bi-arrow-left.me-1
+                  |  Annulla
+                button.btn.btn-primary-custom.rounded-pill.px-5.py-2.fw-bold(type="submit")
+                  i.bi.bi-check2-circle.me-1
+                  |  Salva Intervento
