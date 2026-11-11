@@ -1,8 +1,22 @@
 extends layout
 
 block content
-    div.content
-        div.container
-            h1= message
-            h2= error.status
-            pre #{error.stack}
+  .container.py-5.text-center
+    .row.justify-content-center
+      .col-md-7.col-lg-6
+        .card.modern-card.p-5.shadow-lg.border-0
+          .icon-badge.mx-auto.mb-3(style="background-color: #fee2e2;")
+            i.bi.bi-exclamation-triangle-fill.text-danger.fs-2
+          h1.h3.fw-bold.text-slate-900.mb-2 Si è verificato un errore
+          p.text-muted.mb-4= message || 'Qualcosa è andato storto durante l\'elaborazione della richiesta.'
+
+          if error && error.status
+            .badge.bg-danger.rounded-pill.px-3.py-2.mb-3 Errore #{error.status}
+
+          if error && error.stack
+            pre.text-start.bg-light.p-3.rounded-3.small.overflow-auto(style="max-height: 200px;")= error.stack
+
+          .mt-4
+            a.btn.btn-primary-custom.rounded-pill.px-4(href="/")
+              i.bi.bi-house-door-fill.me-1
+              |  Torna alla Dashboard

@@ -1,66 +1,119 @@
 #!/usr/bin/env node
+'use strict';
 
-/**
- * Module dependencies.
- */
-var app = require('../app');
-var debug = require('debug')('carmaintenance:server');
-var http = require('http');
-const ngrok = require('ngrok');
+require('dotenv').config();
 
-/**
- * Get port from environment and store in Express.
- */
+const app = require('../app');
+const debug = require('debug')('carmaintenance:server');
+const http = require('http');
+const { connectDB, disconnectDB } = require('../config/database');
+
 const port = normalizePort(process.env.PORT || 4000);
+const host = process.env.HOST || '127.0.0.1';
+const startupType = process.env.STARTUP_TYPE || process.env.NODE_ENV || 'development';
+const enableNgrok = process.env.ENABLE_NGROK === 'true';
+
 app.set('port', port);
 
-// Create HTTP server
 const server = http.createServer(app);
 
-// Start the party
-startServer();
+server.on('error', onError);
+server.on('listening', onListening);
 
-async function startServer() {
+// Avvio server e connessione al DB
+(async () => {
   try {
-    server.listen(port, '0.0.0.0');
+    const storageMode = process.env.STORAGE_MODE || (process.env.NODE_ENV === 'production' ? 'browser' : 'mongodb');
+    if (storageMode === 'mongodb') {
+      try {
+        await connectDB();
+      } catch (dbErr) {
+        console.warn(`⚠️  MongoDB non disponibile (${dbErr.message}). L'applicazione sarà operativa tramite storage browser.`);
+      }
+    } else {
+      console.log(`📦 Modalità storage configurata: ${storageMode}. MongoDB non avviato sul server.`);
+    }
 
-    server.on('listening', onListening);
-    server.on('error', onError);
-
-    // Connect to ngrok
-    const url = await ngrok.connect({ addr: port, authtoken_from_env: true });
-    console.log(`✨ Tunnel opened at: ${url}`);
+    server.listen(port, host);
   } catch (err) {
-    console.error('💥 Error starting server:', err);
+    console.error('❌ Errore fatale all\'avvio del server:', err);
     process.exit(1);
   }
-}
+})();
 
 function normalizePort(val) {
-  const port = parseInt(val, 10);
-  if (isNaN(port)) return val;
-  if (port >= 0) return port;
+  const p = parseInt(val, 10);
+  if (isNaN(p)) return val;
+  if (p >= 0) return p;
   return false;
 }
 
 function onError(error) {
   if (error.syscall !== 'listen') throw error;
 
-  const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+  const bind = typeof port === 'string' ? 'Pipe ' + port : 'Porta ' + port;
   switch (error.code) {
     case 'EACCES':
-      console.error(`${bind} requires elevated privileges`);
+      console.error(`❌ ${bind} richiede privilegi elevati.`);
       process.exit(1);
     case 'EADDRINUSE':
-      console.error(`${bind} is already in use`);
+      console.error(`❌ ${bind} è già occupata da un altro processo.`);
       process.exit(1);
     default:
       throw error;
   }
 }
 
-function onListening() {
-  const addr = server.address();
-  const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
-  debug(`🚀 Server listening on ${bind}`);
+async function openNgrokTunnel() {
+  if (!enableNgrok) {
+    console.log('🔒 Ngrok disabilitato per default. Imposta ENABLE_NGROK=true per abilitarlo.');
+    return;
+  }
+
+  const token = process.env.NGROK_AUTHTOKEN;
+  if (!token) {
+    console.warn('⚠️  ENABLE_NGROK=true ma NGROK_AUTHTOKEN non è impostato. Tunneling saltato.');
+    return;
+  }
+
+  try {
+    const ngrok = require('@ngrok/ngrok');
+    const tunnelOptions = { addr: `${host}:${port}`, authtoken_from_env: true };
+    if (process.env.NGROK_DEBUG === '1') {
+      tunnelOptions.onLogEvent = (msg) => console.log(`[ngrok] ${msg}`);
+    }
+    const listener = await ngrok.forward(tunnelOptions);
+    console.log(`🚀 ngrok tunnel attivo: ${listener.url()}`);
+  } catch (error) {
+    const details = error.body && error.body.details && error.body.details.err;
+    console.error('❌ Errore apertura tunnel ngrok:', details || error.message);
+  }
 }
+
+async function onListening() {
+  const addr = server.address();
+  const bind = typeof addr === 'string' ? `pipe ${addr}` : `http://${addr.address}:${addr.port}`;
+  console.log(`🚀 CarMaintenance in ascolto su ${bind} [Ambiente: ${startupType}]`);
+
+  if (enableNgrok) {
+    await openNgrokTunnel();
+  }
+}
+
+// Chiusura aggraziata delle connessioni
+async function gracefulShutdown(signal) {
+  console.log(`\n🛑 Ricevuto segnale ${signal}. Chiusura server e connessioni in corso...`);
+  server.close(async () => {
+    try {
+      await disconnectDB();
+      console.log('✅ Chiusura completata. Arrivederci!');
+      process.exit(0);
+    } catch (err) {
+      console.error('Errore durante la chiusura del database:', err);
+      process.exit(1);
+    }
+  });
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

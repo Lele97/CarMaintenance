@@ -1,21 +1,312 @@
 extends layout
 
 block content
-    .content
-        .container
-            each intervento in interventions
-                .intervention-card
-                    h3= intervento.date
-                    p= intervento.intervento
-                    .info-row
-                        span Chilometri: #{intervento.kilometri}
-                        span Costo: €#{intervento.costo}
-                    .action-row
-                        a.btn-edit(href=`/update/${intervento._id}`)
-                            span.material-symbols-outlined edit
-                            |  Edit
-                        form(method="post", action=`/delete/${intervento._id}`)
-                            input(type="hidden", name="_method", value="delete")
-                            button.btn-delete(type="submit")
-                                span.material-symbols-outlined delete
-                                |  delete
+  .container-xl.py-4
+    //- Dashboard Greeting & Vehicle Bar
+    .dashboard-header.d-flex.flex-wrap.justify-content-between.align-items-center.gap-3
+      div
+        h1.h3.fw-extrabold.text-slate-900.mb-1 Panoramica Manutenzioni
+        p.text-muted.small.mb-0 Monitora costi, odometro, scadenze e interventi in tempo reale.
+      .d-flex.align-items-center.gap-2
+        button.btn.btn-outline-primary.btn-sm.rounded-pill.px-3(
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#exportImportModal"
+        )
+          i.bi.bi-download.me-1
+          |  Esporta / Backup
+        button.btn.btn-primary-custom.btn-sm.rounded-pill.px-3(
+          type="button"
+          onclick="window.openNewModal ? window.openNewModal() : window.location.href='/add'"
+        )
+          i.bi.bi-plus-lg.me-1
+          |  Nuovo Intervento
+
+    //- 1. KPI Statistics Component (4-Card Grid)
+    .row.g-3.mb-4
+      .col-12.col-sm-6.col-lg-3
+        .card.modern-card.kpi-card
+          .d-flex.justify-content-between.align-items-start
+            div
+              .kpi-title Spesa Totale
+              #kpi-total-cost.kpi-value= (stats ? '€' + stats.totalCost.toFixed(2) : '€0,00')
+              .small.text-muted Spese complessive sostenute
+            .kpi-icon-wrap.kpi-icon-orange
+              i.bi.bi-currency-euro
+
+      .col-12.col-sm-6.col-lg-3
+        .card.modern-card.kpi-card
+          .d-flex.justify-content-between.align-items-start
+            div
+              .kpi-title Chilometraggio
+              #kpi-max-km.kpi-value= (stats ? stats.maxKm.toLocaleString('it-IT') + ' km' : '0 km')
+              .small.text-muted Ultima lettura registrata
+            .kpi-icon-wrap.kpi-icon-blue
+              i.bi.bi-speedometer2
+
+      .col-12.col-sm-6.col-lg-3
+        .card.modern-card.kpi-card
+          .d-flex.justify-content-between.align-items-start
+            div
+              .kpi-title Interventi
+              #kpi-total-count.kpi-value= (stats ? stats.totalCount : '0')
+              .small.text-muted
+                | Media: 
+                span#kpi-avg-cost.fw-semibold= (stats ? '€' + stats.avgCost.toFixed(2) : '€0,00')
+            .kpi-icon-wrap.kpi-icon-dark
+              i.bi.bi-tools
+
+      .col-12.col-sm-6.col-lg-3
+        .card.modern-card.kpi-card
+          .d-flex.justify-content-between.align-items-start
+            div
+              .kpi-title Stato Veicolo
+              #kpi-health-badge.my-2
+                span.badge.bg-success.rounded-pill
+                  i.bi.bi-shield-check.me-1
+                  |  In Regola
+              .small.text-muted Basato su tagliandi e scadenze
+            .kpi-icon-wrap.kpi-icon-orange
+              i.bi.bi-heart-pulse-fill
+
+    //- 2. Charts & Reminders Grid
+    .row.g-3.mb-4
+      // Chart 1: Andamento Spese nel Tempo
+      .col-12.col-lg-8
+        .card.modern-card.h-100
+          .chart-card-header.d-flex.justify-content-between.align-items-center
+            div
+              h2.chart-title Andamento Spese nel Tempo
+              p.chart-subtitle Cronistoria degli importi spesi per mese
+            span.badge.bg-light.text-dark.border.rounded-pill.px-3.py-1.small
+              i.bi.bi-bar-chart-fill.text-primary.me-1
+              |  Mensile
+          .chart-canvas-wrap
+            canvas#expenseChart
+
+      // Smart Reminders Card
+      .col-12.col-lg-4
+        .card.modern-card.h-100
+          .chart-card-header
+            h2.chart-title Scadenze & Tagliandi
+            p.chart-subtitle Promemoria per interventi futuri
+          .p-3
+            #upcoming-reminders-container
+              if stats && stats.upcoming && stats.upcoming.length > 0
+                each r in stats.upcoming
+                  .reminder-card.p-3.rounded-3.mb-2.border.bg-white.shadow-sm(class=(r.status === 'scaduto' ? 'border-danger reminder-alert-danger' : (r.status === 'imminente' ? 'border-warning reminder-alert-warning' : 'border-success')))
+                    .d-flex.justify-content-between.align-items-center.mb-1
+                      .fw-bold.text-slate-900.small.d-flex.align-items-center
+                        i.bi.me-2.fs-5(class=(r.status === 'scaduto' ? 'bi-exclamation-circle-fill text-danger' : (r.status === 'imminente' ? 'bi-clock-history text-warning' : 'bi-wrench-adjustable text-success')))
+                        = r.titolo
+                      span.badge.rounded-pill(class=(r.status === 'scaduto' ? 'bg-danger' : (r.status === 'imminente' ? 'bg-warning text-dark' : 'bg-success')))= r.status === 'scaduto' ? 'Scaduto' : (r.status === 'imminente' ? 'Imminente' : 'Regolare')
+                    .text-muted.small.ps-4= r.descrizione
+              else
+                .text-center.py-4.text-muted.small
+                  i.bi.bi-check2-circle.fs-3.text-success.d-block.mb-1
+                  | Nessuna scadenza imminente registrata.
+
+    //- 3. Secondary Charts (Doughnut & Mileage)
+    .row.g-3.mb-4
+      .col-12.col-md-5
+        .card.modern-card.h-100
+          .chart-card-header
+            h2.chart-title Distribuzione per Categoria
+            p.chart-subtitle Ripartizione percentuale delle spese
+          .chart-canvas-wrap
+            canvas#categoryChart
+
+      .col-12.col-md-7
+        .card.modern-card.h-100
+          .chart-card-header
+            h2.chart-title Evoluzione Odometro
+            p.chart-subtitle Chilometraggio nel corso del tempo
+          .chart-canvas-wrap
+            canvas#mileageChart
+
+    //- 4. Search, Filter & Controls Bar
+    .filter-card
+      .row.g-2.align-items-center
+        .col-12.col-md-4
+          .input-group
+            span.input-group-text.bg-transparent.border-end-0
+              i.bi.bi-search.text-muted
+            input#search-input.form-control.filter-input.border-start-0(
+              type="text"
+              placeholder="Cerca per intervento o note..."
+              value=(filters ? filters.search : '')
+            )
+        .col-6.col-md-3
+          select#category-filter.form-select.filter-input
+            option(value="Tutte") Tutte le categorie
+            each cat in (categories || ['Tagliando', 'Olio e Filtri', 'Freni', 'Pneumatici', 'Batteria', 'Revisione', 'Riparazione Meccanica', 'Carrozzeria', 'Altro'])
+              option(value=cat selected=(filters && filters.categoria === cat))= cat
+        .col-6.col-md-3
+          select#sort-filter.form-select.filter-input
+            option(value="date_desc") Data (Più recenti prima)
+            option(value="date_asc") Data (Più vecchi prima)
+            option(value="cost_desc") Costo (Dal più alto)
+            option(value="cost_asc") Costo (Dal più basso)
+            option(value="km_desc") Chilometri (Dal più alto)
+            option(value="km_asc") Chilometri (Dal più basso)
+        .col-12.col-md-2.text-md-end
+          button#reset-filters-btn.btn.btn-outline-secondary.w-100.rounded-pill(type="button")
+            i.bi.bi-x-circle.me-1
+            |  Azzera
+
+    //- 5. Interventions Board (Table & Mobile Cards)
+    .card.modern-card.modern-table-card
+      .card-header.bg-white.py-3.px-4.border-bottom.d-flex.justify-content-between.align-items-center
+        .d-flex.align-items-center.gap-2
+          h2.h5.fw-bold.text-slate-900.mb-0 Storico Interventi
+          span#items-count-badge.badge.bg-primary.rounded-pill
+            = (interventions ? interventions.length : 0) + ' interventi'
+        button.btn.btn-sm.btn-primary-custom.rounded-pill.px-3(
+          type="button"
+          onclick="window.openNewModal ? window.openNewModal() : window.location.href='/add'"
+        )
+          i.bi.bi-plus-lg.me-1
+          |  Aggiungi
+
+      // Desktop Table View
+      .table-responsive.d-none.d-md-block
+        table.table.modern-table.mb-0
+          thead
+            tr
+              th(scope="col") Data
+              th(scope="col") Categoria
+              th(scope="col") Descrizione Intervento
+              th(scope="col") Chilometri
+              th(scope="col") Costo
+              th.text-end(scope="col") Azioni
+          tbody#interventions-table-body
+            if interventions && interventions.length > 0
+              each item in interventions
+                tr.align-middle.hover-row
+                  td.fw-semibold.text-slate-800= item.dateFormatted || item.date
+                  td
+                    span.badge.rounded-pill.px-3.py-1.fw-medium(class='badge-cat-' + (item.categoria ? item.categoria.toLowerCase().replace(/\s+/g, '') : 'altro'))
+                      = item.categoria || 'Altro'
+                  td
+                    .fw-bold.text-slate-900= item.intervento
+                    if item.note
+                      .small.text-muted.text-truncate(style="max-width: 320px;")= item.note
+                  td.text-nowrap.fw-medium.text-slate-700= (item.kilometriFormatted || item.kilometri) + ' km'
+                  td.text-nowrap.fw-bold.text-primary= item.costoFormatted || ('€' + item.costo)
+                  td.text-end.text-nowrap
+                    button.btn.btn-sm.btn-icon.btn-outline-primary.me-1.edit-item-btn(data-id=(item._id || item.id) title="Modifica")
+                      i.bi.bi-pencil
+                    button.btn.btn-sm.btn-icon.btn-outline-danger.delete-item-btn(data-id=(item._id || item.id) title="Elimina")
+                      i.bi.bi-trash3
+
+      // Mobile Cards View
+      #interventions-cards-container.d-md-none.p-3
+
+      // Empty State Box
+      #empty-state.empty-state-box(class=(interventions && interventions.length > 0 ? 'd-none' : ''))
+        .empty-state-icon
+          i.bi.bi-wrench
+        h3.h5.fw-bold.text-slate-800 Nessun intervento trovato
+        p.text-muted.small.mb-3 Inizia registrando il primo tagliando o manutenzione del tuo veicolo.
+        button.btn.btn-primary-custom.rounded-pill.px-4(
+          type="button"
+          onclick="window.openNewModal ? window.openNewModal() : window.location.href='/add'"
+        )
+          i.bi.bi-plus-lg.me-1
+          |  Registra Intervento
+
+  //- Modale per Aggiunta / Modifica Intervento
+  #interventionModal.modal.fade(tabindex="-1" aria-labelledby="modal-title" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered.modal-lg
+      .modal-content.border-0.shadow-lg.rounded-4
+        .modal-header.border-0.pb-0.px-4.pt-4
+          .d-flex.align-items-center.gap-2
+            .icon-badge
+              i.bi.bi-tools.text-primary.fs-4
+            div
+              h3#modal-title.h5.fw-bold.text-slate-900.mb-0 Nuovo Intervento
+              p.text-muted.small.mb-0 Inserisci i dettagli dell'operazione
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Chiudi")
+        .modal-body.p-4
+          form#modal-intervention-form
+            input#modal-item-id(type="hidden")
+            .row.g-3
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-date") Data dell'intervento *
+                input#modal-date.form-control.custom-input(type="date" required)
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-categoria") Categoria *
+                select#modal-categoria.form-select.custom-input
+                  each cat in (categories || ['Tagliando', 'Olio e Filtri', 'Freni', 'Pneumatici', 'Batteria', 'Revisione', 'Riparazione Meccanica', 'Carrozzeria', 'Altro'])
+                    option(value=cat)= cat
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-kilometri") Chilometraggio (km) *
+                input#modal-kilometri.form-control.custom-input(type="number" min="0" max="2000000" placeholder="Es. 105000" required)
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-costo") Costo totale (€) *
+                input#modal-costo.form-control.custom-input(type="number" step="0.01" min="0" max="1000000" placeholder="Es. 150.00" required)
+              .col-12
+                label.form-label.fw-semibold(for="modal-intervento") Descrizione Intervento *
+                textarea#modal-intervento.form-control.custom-input(rows="3" placeholder="Dettagli manutenzione..." required)
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-veicolo") Veicolo
+                input#modal-veicolo.form-control.custom-input(type="text" value="Volkswagen Golf 7")
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-note") Note aggiuntive
+                input#modal-note.form-control.custom-input(type="text" placeholder="Officina, ricambi utilizzati...")
+
+            .d-flex.justify-content-end.gap-2.mt-4.pt-3.border-top
+              button.btn.btn-outline-secondary.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Annulla
+              button.btn.btn-primary-custom.rounded-pill.px-4(type="submit")
+                i.bi.bi-check2.me-1
+                |  Salva
+
+  //- Modale Conferma Cancellazione
+  #deleteModal.modal.fade(tabindex="-1" aria-labelledby="deleteModalTitle" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+      .modal-content.border-0.shadow-lg.rounded-4
+        .modal-body.p-4.text-center
+          .icon-badge.mx-auto.mb-3(style="background-color: #fee2e2;")
+            i.bi.bi-trash3.text-danger.fs-3
+          h3#deleteModalTitle.h5.fw-bold.text-slate-900 Sei sicuro di voler eliminare questo intervento?
+          p.text-muted.small L'operazione è definitiva e rimuoverà il record dallo storico della manutenzione.
+          .d-flex.justify-content-center.gap-2.mt-4
+            button.btn.btn-outline-secondary.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Annulla
+            button#confirm-delete-btn.btn.btn-danger.rounded-pill.px-4(type="button")
+              i.bi.bi-trash3.me-1
+              |  Elimina definitivamente
+
+  //- Modale Esporta / Importa Dossier
+  #exportImportModal.modal.fade(tabindex="-1" aria-labelledby="exportImportTitle" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+      .modal-content.border-0.shadow-lg.rounded-4
+        .modal-header.border-0.px-4.pt-4
+          .d-flex.align-items-center.gap-2
+            .icon-badge
+              i.bi.bi-folder2-open.text-primary.fs-4
+            div
+              h3#exportImportTitle.h5.fw-bold.text-slate-900 Dossier & Backup Storico
+              p.text-muted.small Esporta per vendita o passaggio di proprietà, o ripristina dati
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Chiudi")
+        .modal-body.p-4
+          .mb-4
+            h4.h6.fw-bold.text-slate-900.mb-2 📤 Esporta Storico
+            p.text-muted.small.mb-3 Scarica l'intero fascicolo manutenzioni in un formato portabile compatibile con spreadsheet o backup.
+            .d-flex.gap-2
+              button#export-json-btn.btn.btn-outline-primary.rounded-pill.px-3.w-100(type="button")
+                i.bi.bi-filetype-json.me-1
+                |  Esporta JSON
+              button#export-csv-btn.btn.btn-outline-primary.rounded-pill.px-3.w-100(type="button")
+                i.bi.bi-filetype-csv.me-1
+                |  Esporta CSV
+
+          hr
+
+          div
+            h4.h6.fw-bold.text-slate-900.mb-2 📥 Importa Storico
+            p.text-muted.small.mb-2 Carica un file JSON di backup per importare gli interventi:
+            .input-group.mb-3
+              input#import-file-input.form-control.custom-input(type="file" accept=".json")
+            button#import-submit-btn.btn.btn-primary-custom.rounded-pill.w-100(type="button")
+              i.bi.bi-upload.me-1
+              |  Carica e Importa nel Browser

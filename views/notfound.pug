@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  .container.py-5.text-center
+    .row.justify-content-center
+      .col-md-7.col-lg-6
+        .card.modern-card.p-5.shadow-lg.border-0
+          .icon-badge.mx-auto.mb-3(style="background-color: #fef3c7;")
+            i.bi.bi-signpost-split-fill.text-warning.fs-2
+          h1.display-5.fw-bold.text-slate-900.mb-2 404
+          h2.h4.fw-semibold.text-slate-800.mb-3 Pagina Non Trovata
+          p.text-muted.mb-4
+            | Il percorso 
+            code.text-primary.fw-semibold= url || '/'
+            |  non corrisponde a nessuna risorsa valida nell'applicazione.
+
+          .mt-2
+            a.btn.btn-primary-custom.rounded-pill.px-4(href="/")
+              i.bi.bi-speedometer2.me-1
+              |  Torna alla Dashboard

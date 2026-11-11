@@ -1,11 +1,40 @@
-header
-    .container
-        .row.align-items-center
-            .col-md-4.text-center
-                a(href="/" title="Home")
-                    i.bi.bi-house-fill.custom-header-i
-            .col-md-4.text-center
-                img(src="/image/Car maintenance.png" alt="Website Title" class="img-fluid mx-auto d-block custom-header-img")
-            .col-md-4.text-center
-                a(href="/add" title="Add New")
-                    i.bi.bi-plus-circle-fill.custom-header-i
+header.app-navbar
+  .container-xl
+    .d-flex.flex-wrap.align-items-center.justify-content-between.gap-3
+      // Logo & Brand
+      a.brand-title(href="/" title="Vai alla Dashboard")
+        i.bi.bi-speedometer2.text-primary.fs-4
+        span
+          | Car
+          span.brand-accent Maintenance
+          span.brand-dot
+
+      // Centered Vehicle & Storage Badge
+      .d-flex.align-items-center.gap-2.d-none.d-md-flex
+        .vehicle-pill
+          i.bi.bi-car-front-fill.text-primary.me-2
+          span.fw-bold Volkswagen Golf 7
+        button#toggle-storage-mode-btn.btn.p-0.border-0.bg-transparent(type="button" title="Clicca per alternare la modalità di archiviazione")
+          span#storage-mode-indicator.badge.rounded-pill.storage-badge.storage-badge-browser
+            span.badge-dot.bg-warning
+            i.bi.bi-hdd-fill.me-1
+            |  Browser Storage
+
+      // Navigation Actions
+      .d-flex.align-items-center.gap-2
+        button.btn.btn-sm.btn-nav-secondary.rounded-pill.px-3(
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#exportImportModal"
+          title="Esporta o importa dossier manutenzioni"
+        )
+          i.bi.bi-arrow-down-up.me-1
+          span.d-none.d-sm-inline Dossier
+
+        button.btn.btn-sm.btn-nav-primary.rounded-pill.px-3(
+          type="button"
+          onclick="window.openNewModal ? window.openNewModal() : window.location.href='/add'"
+          title="Inserisci nuovo intervento"
+        )
+          i.bi.bi-plus-lg.me-1
+          |  Nuovo Intervento

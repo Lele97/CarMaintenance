@@ -1,48 +1,99 @@
+'use strict';
+
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const methodOverride = require('method-override');
-const bodyParser = require('body-parser');
+
 const indexRouter = require('./routes/index');
-const addRouter = require("./routes/add");
-const dataRouter = require("./routes/data");
-const updateRouter = require("./routes/update");
-const deleteRouter = require("./routes/delete");
+const addRouter = require('./routes/add');
+const dataRouter = require('./routes/data');
+const updateRouter = require('./routes/update');
+const deleteRouter = require('./routes/delete');
+const apiRouter = require('./routes/api');
+
 const app = express();
 
+// Impostazioni template engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(bodyParser.json());
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+// Disabilita header che espone tecnologia
+app.disable('x-powered-by');
+
+// Middleware di sicurezza di base
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// Logger solo in ambiente non-test
+if (process.env.NODE_ENV !== 'test') {
+  app.use(logger('dev'));
+}
+
+// Body parsers con limite di dimensione
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 app.use(cookieParser());
-app.use(methodOverride('_method'))
+app.use(methodOverride('_method'));
+
+// Asset statici
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
-app.use("/image", express.static(path.join(__dirname, 'public', 'images')));
-app.use("/css", express.static(path.join(__dirname, 'public', 'stylesheets')));
-app.use("/js", express.static(path.join(__dirname, 'public', 'javascripts')));
+app.use('/image', express.static(path.join(__dirname, 'public', 'images')));
+app.use('/css', express.static(path.join(__dirname, 'public', 'stylesheets')));
+app.use('/js', express.static(path.join(__dirname, 'public', 'javascripts')));
+
+// Routing applicazione
+app.use('/api', apiRouter);
 app.use('/', indexRouter);
 app.use('/add', addRouter);
 app.use('/data', dataRouter);
 app.use('/update', updateRouter);
 app.use('/delete', deleteRouter);
 
+// Gestione 404
 app.use(function (req, res, next) {
-    next(createError(404));
+  res.status(404);
+
+  if (req.accepts('html')) {
+    return res.render('notfound', {
+      title: 'Pagina non trovata - CarMaintenance',
+      url: req.originalUrl || req.url
+    });
+  }
+  if (req.accepts('json')) {
+    return res.json({ error: 'Risorsa non trovata', url: req.originalUrl || req.url });
+  }
+  res.type('txt').send('Not found');
 });
 
-app.use(function (err, req, res) {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+// Gestione errori centralizzata (firma standard Express a 4 argomenti)
+app.use(function (err, req, res, next) {
+  const status = err.status || 500;
+  res.status(status);
 
-    // render the error page
-    res.status(err.status || 500);
-    res.render('error');
+  const isDev = req.app.get('env') === 'development';
+  const errorMessage = err.message || 'Si è verificato un errore imprevisto';
+  const errorDetails = isDev ? err : {};
+
+  if (req.accepts('json') && !req.accepts('html')) {
+    return res.json({
+      error: errorMessage,
+      status,
+      ...(isDev ? { stack: err.stack } : {})
+    });
+  }
+
+  res.locals.message = errorMessage;
+  res.locals.error = errorDetails;
+  res.locals.title = `Errore ${status} - CarMaintenance`;
+  res.render('error');
 });
 
 module.exports = app;
