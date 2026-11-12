@@ -53,7 +53,7 @@ async function connectDB(customUri) {
     console.log(`🌱 Connessione a MongoDB stabilita (${sanitized})`);
     return mongoose.connection;
   } catch (error) {
-    console.error(`❌ Errore durante la connessione a MongoDB: ${error.message}`);
+    console.error(`❌ Errore durante la connessione a MongoDB (${error.name || 'DatabaseError'}).`);
     throw error;
   } finally {
     isConnecting = false;

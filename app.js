@@ -13,6 +13,7 @@ const dataRouter = require('./routes/data');
 const updateRouter = require('./routes/update');
 const deleteRouter = require('./routes/delete');
 const apiRouter = require('./routes/api');
+const healthRouter = require('./routes/health');
 
 const app = express();
 app.locals.appVersion = require('./package.json').version;
@@ -35,7 +36,7 @@ app.use((req, res, next) => {
 
 // Logger solo in ambiente non-test
 if (process.env.NODE_ENV !== 'test') {
-  app.use(logger('dev'));
+  app.use(logger(':method :status :response-time ms'));
 }
 
 // Body parsers con limite di dimensione
@@ -51,6 +52,7 @@ app.use('/css', express.static(path.join(__dirname, 'public', 'stylesheets')));
 app.use('/js', express.static(path.join(__dirname, 'public', 'javascripts')));
 
 // Routing applicazione
+app.use('/health', healthRouter);
 app.use('/api', apiRouter);
 app.use('/', indexRouter);
 app.use('/add', addRouter);
