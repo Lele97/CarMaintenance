@@ -372,7 +372,7 @@ const CarStorage = (() => {
     const items = await getAll();
     const payload = {
       app: 'CarMaintenance',
-      version: '1.0.0',
+      version: document.body.dataset.appVersion,
       exportedAt: new Date().toISOString(),
       count: items.length,
       data: items

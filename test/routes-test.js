@@ -24,6 +24,7 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/');
     expect(res.status).to.equal(200);
     expect(res.text).to.include('CarMaintenance');
+    expect(res.text).to.include(`data-app-version="${require('../package.json').version}"`);
   });
 
   it('GET /data should return 200 with JSON array', async function () {
@@ -42,6 +43,13 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/api/status');
     expect(res.status).to.equal(200);
     expect(res.body).to.have.property('status', 'ok');
+    expect(res.body).to.have.property('version', require('../package.json').version);
+  });
+
+  it('GET /data/export should include the current application version', async function () {
+    const res = await request(app).get('/data/export');
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('version', require('../package.json').version);
   });
 
   it('GET /random-not-found-page should return 404', async function () {

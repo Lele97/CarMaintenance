@@ -19,7 +19,7 @@ html(lang="it")
     // Custom Modern Design System
     link(rel="stylesheet" href="/css/style.css")
 
-  body.wrapper(data-storage-mode=(storageMode || 'browser'))
+  body.wrapper(data-storage-mode=(storageMode || 'browser') data-app-version=appVersion)
     include header
 
     main.flex-grow-1

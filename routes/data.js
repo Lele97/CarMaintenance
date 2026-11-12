@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const interventionService = require('../services/interventionService');
 const { isDBConnected } = require('../config/database');
+const appVersion = require('../package.json').version;
 
 // GET /data - Lista tutti gli interventi in JSON
 router.get('/', async function (req, res, next) {
@@ -70,7 +71,7 @@ router.get('/export', async function (req, res, next) {
     res.setHeader('Content-Disposition', `attachment; filename="carmaintenance-export-${new Date().toISOString().slice(0, 10)}.json"`);
     res.status(200).json({
       app: 'CarMaintenance',
-      version: '1.0.0',
+      version: appVersion,
       exportedAt: new Date().toISOString(),
       count: items.length,
       data: items

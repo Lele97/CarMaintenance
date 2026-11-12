@@ -120,11 +120,20 @@ Parametri configurabili in `.env`:
 
 ### 4. Esecuzione dei Test
 ```bash
+npm run check
 npm test
 ```
-Tutti i test di integrazione e route vengono eseguiti con isolamento automatico del database e chiusura pulita delle connessioni.
+Il controllo statico verifica la sintassi JavaScript; i test di integrazione e route usano il database di test e chiudono le connessioni al termine. GitHub Actions esegue entrambi i controlli, oltre alla build, su Node.js 18, 20 e 22 per push e pull request verso `master` o `main`.
 
-### 5. Avvio Applicazione
+### 5. Versioni e release
+La versione applicativa è definita in `package.json` e riportata nell'API, nella pagina e nei dossier esportati. Per aggiornare la versione e creare il tag Git corrispondente:
+```bash
+npm version patch # oppure minor o major
+git push origin <branch> --follow-tags
+```
+Il push di un tag `vX.Y.Z` avvia il workflow di release, che verifica la corrispondenza con `package.json`, ripete i controlli e pubblica una release GitHub con note generate automaticamente.
+
+### 6. Avvio Applicazione
 ```bash
 npm start
 ```
