@@ -7,20 +7,9 @@ block content
       div
         h1.h3.fw-extrabold.text-slate-900.mb-1 Panoramica Manutenzioni
         p.text-muted.small.mb-0 Monitora costi, odometro, scadenze e interventi in tempo reale.
-      .d-flex.align-items-center.gap-2
-        button.btn.btn-outline-primary.btn-sm.rounded-pill.px-3(
-          type="button"
-          data-bs-toggle="modal"
-          data-bs-target="#exportImportModal"
-        )
-          i.bi.bi-download.me-1
-          |  Esporta / Backup
-        button.btn.btn-primary-custom.btn-sm.rounded-pill.px-3(
-          type="button"
-          onclick="window.openNewModal ? window.openNewModal() : window.location.href='/add'"
-        )
-          i.bi.bi-plus-lg.me-1
-          |  Nuovo Intervento
+      span.dashboard-kicker
+        i.bi.bi-shield-check.me-2(aria-hidden="true")
+        | Il tuo veicolo, sempre sotto controllo
 
     //- 1. KPI Statistics Component (4-Card Grid)
     .row.g-3.mb-4
@@ -38,16 +27,6 @@ block content
         .card.modern-card.kpi-card
           .d-flex.justify-content-between.align-items-start
             div
-              .kpi-title Chilometraggio
-              #kpi-max-km.kpi-value= (stats ? stats.maxKm.toLocaleString('it-IT') + ' km' : '0 km')
-              .small.text-muted Ultima lettura registrata
-            .kpi-icon-wrap.kpi-icon-blue
-              i.bi.bi-speedometer2
-
-      .col-12.col-sm-6.col-lg-3
-        .card.modern-card.kpi-card
-          .d-flex.justify-content-between.align-items-start
-            div
               .kpi-title Interventi
               #kpi-total-count.kpi-value= (stats ? stats.totalCount : '0')
               .small.text-muted
@@ -55,6 +34,16 @@ block content
                 span#kpi-avg-cost.fw-semibold= (stats ? '€' + stats.avgCost.toFixed(2) : '€0,00')
             .kpi-icon-wrap.kpi-icon-dark
               i.bi.bi-tools
+
+      .col-12.col-sm-6.col-lg-3
+        .card.modern-card.kpi-card
+          .d-flex.justify-content-between.align-items-start
+            div
+              .kpi-title Chilometraggio
+              #kpi-max-km.kpi-value= (stats ? stats.maxKm.toLocaleString('it-IT') + ' km' : '0 km')
+              .small.text-muted Ultima lettura registrata
+            .kpi-icon-wrap.kpi-icon-blue
+              i.bi.bi-speedometer2
 
       .col-12.col-sm-6.col-lg-3
         .card.modern-card.kpi-card
@@ -72,7 +61,7 @@ block content
     //- 2. Charts & Reminders Grid
     .row.g-3.mb-4
       // Chart 1: Andamento Spese nel Tempo
-      .col-12.col-lg-8
+      .col-12.col-lg-7
         .card.modern-card.h-100
           .chart-card-header.d-flex.justify-content-between.align-items-center
             div
@@ -85,7 +74,7 @@ block content
             canvas#expenseChart
 
       // Smart Reminders Card
-      .col-12.col-lg-4
+      .col-12.col-lg-5
         .card.modern-card.h-100
           .chart-card-header
             h2.chart-title Scadenze & Tagliandi
