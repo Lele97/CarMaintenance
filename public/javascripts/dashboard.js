@@ -44,6 +44,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (activeMode === 'browser') {
     await CarStorage.init();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(`/service-worker.js?v=${encodeURIComponent(document.body.dataset.appVersion || 'dev')}`)
+        .catch((error) => {
+          console.error('Registrazione modalità offline non riuscita:', error);
+          showToast('La modalità offline non è stata attivata.', 'warning');
+        });
+    }
   }
 
   // Carica i dati

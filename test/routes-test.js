@@ -47,6 +47,34 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     expect(res.body).to.have.property('storageMode', 'mongodb');
   });
 
+  it('serves the local PWA shell and never caches API responses', async function () {
+    const manifest = await request(app).get('/manifest.webmanifest');
+    expect(manifest.status).to.equal(200);
+    expect(JSON.parse(manifest.text)).to.have.property('start_url', '/');
+
+    const serviceWorker = await request(app).get('/service-worker.js');
+    expect(serviceWorker.status).to.equal(200);
+    expect(serviceWorker.text).to.include('/vendor/bootstrap/js/bootstrap.bundle.min.js');
+    expect(serviceWorker.text).to.include("page.includes('data-storage-mode=\"browser\"')");
+    expect(serviceWorker.text).not.to.include("STATIC_ASSETS.includes('/api/");
+
+    const assets = [
+      '/css/style.css',
+      '/js/storage.js',
+      '/js/dashboard.js',
+      '/vendor/bootstrap/css/bootstrap.min.css',
+      '/vendor/bootstrap/js/bootstrap.bundle.min.js',
+      '/vendor/chart.js/chart.umd.min.js',
+      '/bootstrap-icons/bootstrap-icons.css',
+      '/bootstrap-icons/fonts/bootstrap-icons.woff2',
+      '/image/car-maintenance-icon.svg'
+    ];
+    for (const asset of assets) {
+      const response = await request(app).get(asset);
+      expect(response.status, asset).to.equal(200);
+    }
+  });
+
   it('GET /random-not-found-page should return 404', async function () {
     const res = await request(app).get('/random-not-found-page');
     expect(res.status).to.equal(404);
