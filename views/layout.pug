@@ -19,7 +19,7 @@ html(lang="it")
     // Custom Modern Design System
     link(rel="stylesheet" href="/css/style.css")
 
-  body.wrapper(data-storage-mode=(storageMode || 'browser'))
+  body.wrapper(data-storage-mode=(storageMode || 'mongodb'))
     include header
 
     main.flex-grow-1
@@ -34,5 +34,6 @@ html(lang="it")
     script(src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js")
 
     // Browser Storage Engine & Dashboard scripts
+    script(src="/js/mileageReadings.js")
     script(src="/js/storage.js")
     script(src="/js/dashboard.js")

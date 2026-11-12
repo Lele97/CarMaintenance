@@ -124,6 +124,8 @@ block content
           .chart-canvas-wrap
             canvas#mileageChart
 
+    #odometer-warnings-container.d-none(aria-live="polite")
+
     //- 4. Search, Filter & Controls Bar
     .filter-card
       .row.g-2.align-items-center
@@ -253,7 +255,19 @@ block content
                 input#modal-veicolo.form-control.custom-input(type="text" value="Volkswagen Golf 7")
               .col-md-6
                 label.form-label.fw-semibold(for="modal-note") Note aggiuntive
-                input#modal-note.form-control.custom-input(type="text" placeholder="Officina, ricambi utilizzati...")
+                input#modal-note.form-control.custom-input(type="text" placeholder="Note aggiuntive...")
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-officina") Officina
+                input#modal-officina.form-control.custom-input(type="text" maxlength="150")
+              .col-12
+                label.form-label.fw-semibold(for="modal-parti") Parti e ricambi utilizzati
+                textarea#modal-parti.form-control.custom-input(rows="2" maxlength="1500")
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-prossima-data") Prossima scadenza (data)
+                input#modal-prossima-data.form-control.custom-input(type="date")
+              .col-md-6
+                label.form-label.fw-semibold(for="modal-prossimi-km") Prossima scadenza (km)
+                input#modal-prossimi-km.form-control.custom-input(type="number" min="0" max="2000000" step="1")
 
             .d-flex.justify-content-end.gap-2.mt-4.pt-3.border-top
               button.btn.btn-outline-secondary.rounded-pill.px-4(type="button" data-bs-dismiss="modal") Annulla

@@ -384,7 +384,7 @@ const CarStorage = (() => {
   // Esportazione CSV
   async function exportCSV() {
     const items = await getAll();
-    const headers = ['id', 'date', 'veicolo', 'categoria', 'intervento', 'kilometri', 'costo', 'note'];
+    const headers = ['id', 'date', 'veicolo', 'categoria', 'intervento', 'kilometri', 'costo', 'note', 'officina', 'parti', 'prossimaData', 'prossimiKilometri'];
     const rows = items.map(i => [
       i.id || i._id,
       new Date(i.date).toISOString().slice(0, 10),
@@ -393,7 +393,11 @@ const CarStorage = (() => {
       `"${(i.intervento || '').replace(/"/g, '""')}"`,
       i.kilometri || 0,
       i.costo || 0,
-      `"${(i.note || '').replace(/"/g, '""')}"`
+      `"${(i.note || '').replace(/"/g, '""')}"`,
+      `"${(i.officina || '').replace(/"/g, '""')}"`,
+      `"${(i.parti || '').replace(/"/g, '""')}"`,
+      i.prossimaData ? new Date(i.prossimaData).toISOString().slice(0, 10) : '',
+      i.prossimiKilometri == null ? '' : i.prossimiKilometri
     ].join(','));
 
     const csv = [headers.join(','), ...rows].join('\n');
@@ -432,15 +436,6 @@ const CarStorage = (() => {
     URL.revokeObjectURL(url);
   }
 
-  // Modalità Storage preferita (browser o server)
-  function getStorageMode() {
-    return localStorage.getItem('carmaintenance_mode') || 'browser';
-  }
-
-  function setStorageMode(mode) {
-    localStorage.setItem('carmaintenance_mode', mode);
-  }
-
   return {
     init,
     getAll,
@@ -451,14 +446,11 @@ const CarStorage = (() => {
     calculateStats,
     exportJSON,
     exportCSV,
-    importJSON,
-    getStorageMode,
-    setStorageMode
+    importJSON
   };
 })();
 
 // Inizializzazione al caricamento
 if (typeof window !== 'undefined') {
   window.CarStorage = CarStorage;
-  CarStorage.init().catch(console.error);
 }

@@ -108,13 +108,46 @@ block content
                 .col-md-6
                   label.form-label.fw-semibold(for="note")
                     i.bi.bi-sticky.me-1.text-primary
-                    |  Note / Officina
+                    |  Note
                   input#note.form-control.custom-input(
                     type="text"
                     name="note"
                     placeholder="Es. Officina Rossi, sostituzione filtro abitacolo"
                     value=(formData && formData.note ? formData.note : '')
                   )
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="officina")
+                    i.bi.bi-shop.me-1.text-primary
+                    |  Officina
+                  input#officina.form-control.custom-input(
+                    type="text"
+                    name="officina"
+                    maxlength="150"
+                    value=(formData && formData.officina ? formData.officina : '')
+                    class=(errors && errors.officina ? 'is-invalid' : '')
+                  )
+                  if errors && errors.officina
+                    .invalid-feedback= errors.officina
+
+                .col-12
+                  label.form-label.fw-semibold(for="parti")
+                    i.bi.bi-gear.me-1.text-primary
+                    |  Parti e ricambi utilizzati
+                  textarea#parti.form-control.custom-input(
+                    name="parti"
+                    rows="2"
+                    maxlength="1500"
+                    placeholder="Ricambi, quantità o codici..."
+                  )=(formData && formData.parti ? formData.parti : '')
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="prossimaData") Prossima scadenza (data)
+                  input#prossimaData.form-control.custom-input(type="date" name="prossimaData" value=(formData && formData.prossimaData ? formData.prossimaData : ''))
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="prossimiKilometri") Prossima scadenza (km)
+                  input#prossimiKilometri.form-control.custom-input(type="number" name="prossimiKilometri" min="0" max="2000000" step="1" value=(formData && formData.prossimiKilometri ? formData.prossimiKilometri : ''))
 
               .d-flex.align-items-center.justify-content-between.mt-4.pt-3.border-top
                 a.btn.btn-outline-secondary.rounded-pill.px-4(href="/")

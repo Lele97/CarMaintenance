@@ -18,12 +18,17 @@ Nata come progetto di studio e approfondimento personale su **Node.js**, **Expre
 
 ---
 
-## 🎯 A cosa è pensata
+La modalità di archiviazione è selezionata automaticamente dall'ambiente:
 
-CarMaintenance è pensata per:
-- Chi vuole tenere uno storico digitale degli interventi sul proprio veicolo
-- Chi studia lo stack **Node.js + Express + MongoDB + Pug** e vuole un progetto pratico di riferimento
-- Chi vuole approfondire il pattern **MVC** lato server con routing strutturato
+1. **Sviluppo e test**:
+   * Utilizza il backend Node.js / Express con **MongoDB** e **Mongoose ORM**.
+   * Connessione centralizzata in `config/database.js` con mascheramento credenziali nei log e supporto a database di test isolati (`carmaintenance_test`).
+2. **Produzione**:
+   * **Zero dipendenze esterne**: tutti i dati vengono archiviati e gestiti direttamente nel browser dell'utente tramite **IndexedDB** (con fallback su `LocalStorage`).
+   * Il client esegue CRUD completo, calcolo statistiche, ricerca, filtri ed esportazione interamente in locale.
+   * Include un dataset dimostrativo iniziale pronto all'uso al primo avvio.
+
+Non è disponibile un selettore: lo storage non può essere cambiato dal browser. Impostare `NODE_ENV=production` abilita lo storage browser; negli altri ambienti viene utilizzato MongoDB.
 
 ---
 
@@ -94,11 +99,21 @@ cd CarMaintenance
 # Installa le dipendenze
 npm install
 
-# Crea il file .env con la tua URI MongoDB
-echo "MONGODB_URI=mongodb://localhost:27017/carmaintenance" > .env
+### 3. Configurazione Ambiente
+Copia il file di configurazione di esempio:
+```bash
+cp .env.example .env
+```
+Parametri configurabili in `.env`:
+* `PORT`: porta del server HTTP (default: `4000`)
+* `HOST`: interfaccia di ascolto (default: `127.0.0.1`)
+* `NODE_ENV`: ambiente (`development`, `production`, `test`)
+* `MONGODB_URI`: URI di connessione MongoDB
+* `ENABLE_NGROK`: abilita ngrok se impostato su `true`
 
-# Avvio in sviluppo (con auto-reload)
-npm start
+### 4. Esecuzione dei Test
+```bash
+npm test
 ```
 
 Apri `http://localhost:3000` nel browser.

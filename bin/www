@@ -7,6 +7,7 @@ const app = require('../app');
 const debug = require('debug')('carmaintenance:server');
 const http = require('http');
 const { connectDB, disconnectDB } = require('../config/database');
+const getStorageMode = require('../utils/storageMode');
 
 const port = normalizePort(process.env.PORT || 4000);
 const host = process.env.HOST || '127.0.0.1';
@@ -23,7 +24,7 @@ server.on('listening', onListening);
 // Avvio server e connessione al DB
 (async () => {
   try {
-    const storageMode = process.env.STORAGE_MODE || (process.env.NODE_ENV === 'production' ? 'browser' : 'mongodb');
+    const storageMode = getStorageMode();
     if (storageMode === 'mongodb') {
       try {
         await connectDB();

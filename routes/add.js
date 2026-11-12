@@ -19,7 +19,11 @@ router.get('/', function (req, res) {
       kilometri: '',
       costo: '',
       intervento: '',
-      note: ''
+      note: '',
+      officina: '',
+      parti: '',
+      prossimaData: '',
+      prossimiKilometri: ''
     },
     errors: {}
   });

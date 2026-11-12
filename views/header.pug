@@ -14,11 +14,10 @@ header.app-navbar
         .vehicle-pill
           i.bi.bi-car-front-fill.text-primary.me-2
           span.fw-bold Volkswagen Golf 7
-        button#toggle-storage-mode-btn.btn.p-0.border-0.bg-transparent(type="button" title="Clicca per alternare la modalità di archiviazione")
-          span#storage-mode-indicator.badge.rounded-pill.storage-badge.storage-badge-browser
-            span.badge-dot.bg-warning
-            i.bi.bi-hdd-fill.me-1
-            |  Browser Storage
+        span.badge.rounded-pill.storage-badge(class=(storageMode === 'browser' ? 'storage-badge-browser' : 'storage-badge-server'))
+          span.badge-dot(class=(storageMode === 'browser' ? 'bg-warning' : 'bg-primary'))
+          i.bi.me-1(class=(storageMode === 'browser' ? 'bi-hdd-fill' : 'bi-database-fill'))
+          = storageMode === 'browser' ? ' Browser Storage' : ' MongoDB Server'
 
       // Navigation Actions
       .d-flex.align-items-center.gap-2

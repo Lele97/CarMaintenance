@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cardsContainer = document.getElementById('interventions-cards-container');
   const emptyStateEl = document.getElementById('empty-state');
   const itemsCountBadge = document.getElementById('items-count-badge');
+  const odometerWarningsContainer = document.getElementById('odometer-warnings-container');
 
   // KPI elements
   const totalCostEl = document.getElementById('kpi-total-cost');
@@ -40,14 +41,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportImportModalEl = document.getElementById('exportImportModal');
   const exportImportModal = exportImportModalEl ? new bootstrap.Modal(exportImportModalEl) : null;
 
-  // Determina modalità: controlla se il server ha DB connesso oppure se forzato dal client
-  const serverStorageMode = document.body.dataset.storageMode || 'browser';
-  let activeMode = localStorage.getItem('carmaintenance_mode') || serverStorageMode;
+  const activeMode = document.body.dataset.storageMode || 'mongodb';
 
-  updateStorageBadge(activeMode);
-
-  // Inizializza CarStorage
-  await CarStorage.init();
+  if (activeMode === 'browser') {
+    await CarStorage.init();
+  }
 
   // Carica i dati
   await refreshDashboard();
@@ -71,32 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (sortSelect) sortSelect.value = 'date_desc';
       refreshDashboard();
     });
-  }
-
-  // Toggle Modalità Storage
-  const toggleModeBtn = document.getElementById('toggle-storage-mode-btn');
-  if (toggleModeBtn) {
-    toggleModeBtn.addEventListener('click', () => {
-      activeMode = activeMode === 'browser' ? 'mongodb' : 'browser';
-      localStorage.setItem('carmaintenance_mode', activeMode);
-      updateStorageBadge(activeMode);
-      showToast(`Modalità impostata su: ${activeMode === 'browser' ? 'Browser Storage (IndexedDB)' : 'Server (MongoDB)'}`);
-      refreshDashboard();
-    });
-  }
-
-  function updateStorageBadge(mode) {
-    const badge = document.getElementById('storage-mode-indicator');
-    if (!badge) return;
-    if (mode === 'browser') {
-      badge.innerHTML = `<span class="badge-dot bg-warning"></span><i class="bi bi-hdd-fill me-1"></i> Browser Storage`;
-      badge.className = 'badge rounded-pill storage-badge storage-badge-browser';
-      badge.title = 'Tutti i dati sono salvati localmente nel browser (IndexedDB)';
-    } else {
-      badge.innerHTML = `<span class="badge-dot bg-primary"></span><i class="bi bi-database-fill me-1"></i> MongoDB Server`;
-      badge.className = 'badge rounded-pill storage-badge storage-badge-server';
-      badge.title = 'I dati sono sincronizzati con il server MongoDB';
-    }
   }
 
   // Funzione principale di refresh
@@ -126,22 +98,73 @@ document.addEventListener('DOMContentLoaded', async () => {
           sortOrder
         });
         const res = await fetch(`/data?${queryParams.toString()}`);
-        if (res.ok) {
-          items = await res.json();
-        } else {
-          items = await CarStorage.getAll({ search, categoria, sortBy, sortOrder });
-        }
-      } catch {
-        items = await CarStorage.getAll({ search, categoria, sortBy, sortOrder });
+        if (!res.ok) throw new Error(`Richiesta interventi non riuscita (${res.status})`);
+        items = await res.json();
+      } catch (error) {
+        showToast(`Impossibile caricare gli interventi: ${error.message}`, 'danger');
+        return;
       }
     }
 
     renderTableAndCards(items);
 
     const stats = CarStorage.calculateStats(items);
+    stats.upcoming.push(...getRecordedDueReminders(items, stats.maxKm));
+    renderMileageWarnings(items);
     renderKPIs(stats);
     renderReminders(stats.upcoming);
     renderCharts(stats, items);
+  }
+
+  function renderMileageWarnings(items) {
+    if (!odometerWarningsContainer) return;
+    const warnings = window.findMileageInconsistencies(items);
+    odometerWarningsContainer.classList.toggle('d-none', warnings.length === 0);
+    if (warnings.length === 0) {
+      odometerWarningsContainer.innerHTML = '';
+      return;
+    }
+
+    odometerWarningsContainer.innerHTML = `
+      <div class="alert alert-warning mb-3" role="status">
+        <strong>Letture chilometriche da verificare</strong>
+        <ul class="mb-0 mt-2">
+          ${warnings.map(item => `<li>${formatDate(item.date)}: ${item.kilometri.toLocaleString('it-IT')} km, inferiore alla lettura del ${formatDate(item.precedenteData)} (${item.precedentiKilometri.toLocaleString('it-IT')} km). Lo storico non è stato modificato.</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  function getRecordedDueReminders(items, currentKilometers) {
+    const now = new Date();
+    const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const dayInMilliseconds = 24 * 60 * 60 * 1000;
+
+    return items
+      .filter(item => item.prossimaData || item.prossimiKilometri != null)
+      .map((item) => {
+        const dueDate = item.prossimaData ? new Date(item.prossimaData) : null;
+        const daysRemaining = dueDate
+          ? Math.ceil((Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate()) - todayUtc) / dayInMilliseconds)
+          : null;
+        const kmRemaining = item.prossimiKilometri == null ? null : Number(item.prossimiKilometri) - currentKilometers;
+        const overdue = (daysRemaining !== null && daysRemaining < 0) || (kmRemaining !== null && kmRemaining < 0);
+        const imminent = !overdue && (
+          (daysRemaining !== null && daysRemaining <= 30) ||
+          (kmRemaining !== null && kmRemaining <= 1000)
+        );
+        const deadlines = [];
+
+        if (daysRemaining !== null) deadlines.push(`data ${formatDate(item.prossimaData)}`);
+        if (kmRemaining !== null) deadlines.push(`${Number(item.prossimiKilometri).toLocaleString('it-IT')} km`);
+
+        return {
+          titolo: 'Scadenza registrata',
+          descrizione: `${item.intervento}: ${deadlines.join(' oppure ')}`,
+          status: overdue ? 'scaduto' : (imminent ? 'imminente' : 'ok'),
+          priorita: overdue || imminent ? 'Alta' : 'Bassa'
+        };
+      });
   }
 
   // Rendering Tabella e Cards
@@ -177,6 +200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <td>
               <div class="fw-bold text-slate-900">${escapeHtml(item.intervento)}</div>
               ${item.note ? `<div class="small text-muted text-truncate" style="max-width: 320px;">${escapeHtml(item.note)}</div>` : ''}
+              ${item.officina ? `<div class="small text-muted"><i class="bi bi-shop me-1"></i>${escapeHtml(item.officina)}</div>` : ''}
+              ${item.parti ? `<div class="small text-muted text-truncate" style="max-width: 320px;"><i class="bi bi-gear me-1"></i>${escapeHtml(item.parti)}</div>` : ''}
             </td>
             <td class="text-nowrap fw-medium text-slate-700">${kmFormatted} km</td>
             <td class="text-nowrap fw-bold text-primary">${costoFormatted}</td>
@@ -210,6 +235,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <h6 class="fw-bold text-slate-900 mb-1">${escapeHtml(item.intervento)}</h6>
             ${item.note ? `<p class="small text-muted mb-2">${escapeHtml(item.note)}</p>` : ''}
+            ${item.officina ? `<p class="small text-muted mb-1"><i class="bi bi-shop me-1"></i>${escapeHtml(item.officina)}</p>` : ''}
+            ${item.parti ? `<p class="small text-muted mb-2"><i class="bi bi-gear me-1"></i>${escapeHtml(item.parti)}</p>` : ''}
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
               <span class="text-slate-600 small"><i class="bi bi-speedometer2 me-1"></i><strong>${kmFormatted}</strong> km</span>
               <span class="fw-bold text-primary fs-6">${costoFormatted}</span>
@@ -466,12 +493,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   async function openEditModal(id) {
-    let item = await CarStorage.getById(id);
-    if (!item && activeMode === 'mongodb') {
+    let item;
+    if (activeMode === 'browser') {
+      item = await CarStorage.getById(id);
+    } else {
       try {
         const res = await fetch(`/api/interventions/${id}`);
-        if (res.ok) item = await res.json();
-      } catch {}
+        if (!res.ok) throw new Error(`Richiesta intervento non riuscita (${res.status})`);
+        item = await res.json();
+      } catch (error) {
+        showToast(`Impossibile caricare l'intervento: ${error.message}`, 'danger');
+        return;
+      }
     }
 
     if (!item) {
@@ -487,6 +520,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-costo').value = item.costo || '';
     document.getElementById('modal-intervento').value = item.intervento || '';
     document.getElementById('modal-note').value = item.note || '';
+    document.getElementById('modal-officina').value = item.officina || '';
+    document.getElementById('modal-parti').value = item.parti || '';
+    document.getElementById('modal-prossima-data').value = item.prossimaData ? item.prossimaData.slice(0, 10) : '';
+    document.getElementById('modal-prossimi-km').value = item.prossimiKilometri ?? '';
     document.getElementById('modal-veicolo').value = item.veicolo || 'Veicolo Principale';
 
     interventionModal.show();
@@ -505,6 +542,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         costo: Number(document.getElementById('modal-costo').value),
         intervento: document.getElementById('modal-intervento').value.trim(),
         note: document.getElementById('modal-note').value.trim(),
+        officina: document.getElementById('modal-officina').value.trim(),
+        parti: document.getElementById('modal-parti').value.trim(),
+        prossimaData: document.getElementById('modal-prossima-data').value || null,
+        prossimiKilometri: document.getElementById('modal-prossimi-km').value === ''
+          ? null
+          : Number(document.getElementById('modal-prossimi-km').value),
         veicolo: document.getElementById('modal-veicolo').value.trim() || 'Veicolo Principale'
       };
 
@@ -532,9 +575,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             body: JSON.stringify(payload)
           });
           if (!res.ok) throw new Error('Errore server');
-          // Sincronizza anche localmente
-          if (id) await CarStorage.update(id, payload);
-          else await CarStorage.add(payload);
           showToast('Intervento salvato su MongoDB!');
         }
 
@@ -565,7 +605,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             method: 'DELETE',
             headers: { 'Accept': 'application/json' }
           });
-          await CarStorage.remove(itemToDeleteId);
+          if (!res.ok) throw new Error(`Eliminazione non riuscita (${res.status})`);
           showToast('Intervento eliminato dal database');
         }
 
@@ -582,16 +622,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportJsonBtn = document.getElementById('export-json-btn');
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', async () => {
-      await CarStorage.exportJSON();
-      showToast('Dossier scaricato in formato JSON');
+      if (activeMode === 'browser') {
+        await CarStorage.exportJSON();
+        showToast('Dossier scaricato in formato JSON');
+      } else {
+        window.location.assign('/data/export?format=json');
+      }
     });
   }
 
   const exportCsvBtn = document.getElementById('export-csv-btn');
   if (exportCsvBtn) {
     exportCsvBtn.addEventListener('click', async () => {
-      await CarStorage.exportCSV();
-      showToast('Dossier scaricato in formato CSV');
+      if (activeMode === 'browser') {
+        await CarStorage.exportCSV();
+        showToast('Dossier scaricato in formato CSV');
+      } else {
+        window.location.assign('/data/export?format=csv');
+      }
     });
   }
 
@@ -607,13 +655,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const res = await CarStorage.importJSON(e.target.result);
-        if (res.success) {
-          showToast(`Importati ${res.count} interventi con successo!`);
+        try {
+          if (activeMode === 'browser') {
+            const result = await CarStorage.importJSON(e.target.result);
+            if (!result.success) throw new Error(result.error);
+            showToast(`Importati ${result.count} interventi con successo!`);
+          } else {
+            const parsed = JSON.parse(e.target.result);
+            const items = Array.isArray(parsed) ? parsed : parsed.data;
+            if (!Array.isArray(items)) throw new Error('Struttura file non valida');
+
+            let importedCount = 0;
+            for (const item of items) {
+              const response = await fetch('/api/interventions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(item)
+              });
+              if (!response.ok) {
+                const result = await response.json();
+                throw new Error(`${result.error || 'Importazione non riuscita'} (${importedCount} record importati)`);
+              }
+              importedCount++;
+            }
+            showToast(`Importati ${importedCount} interventi con successo!`);
+          }
+
           if (exportImportModal) exportImportModal.hide();
           await refreshDashboard();
-        } else {
-          showToast(`Errore durante l'importazione: ${res.error}`, 'danger');
+        } catch (error) {
+          showToast(`Errore durante l'importazione: ${error.message}`, 'danger');
         }
       };
       reader.readAsText(file);

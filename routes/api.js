@@ -5,6 +5,7 @@ const router = express.Router();
 const interventionService = require('../services/interventionService');
 const { validateInterventionPayload } = require('../utils/validator');
 const { isDBConnected, getSanitizedUri, getDatabaseUri } = require('../config/database');
+const getStorageMode = require('../utils/storageMode');
 
 // GET /api/status
 router.get('/status', (req, res) => {
@@ -13,7 +14,7 @@ router.get('/status', (req, res) => {
     app: 'CarMaintenance',
     version: '1.0.0',
     env: process.env.NODE_ENV || 'development',
-    storageMode: process.env.STORAGE_MODE || (process.env.NODE_ENV === 'production' ? 'browser' : 'mongodb'),
+    storageMode: getStorageMode(),
     isDBConnected: isDBConnected(),
     databaseUri: isDBConnected() ? getSanitizedUri(getDatabaseUri()) : null
   });
