@@ -136,6 +136,8 @@ Installare la web app da un browser che supporta PWA e servire il sito su HTTPS 
 
 Bootstrap, Chart.js e icone sono serviti localmente. Google Fonts non è richiesto, quindi i font del sistema vengono utilizzati senza richieste a servizi di terze parti.
 
+La pagina `/privacy` descrive i dati trattati, lo storage e i limiti attuali; il dossier consente export e cancellazione dello storico locale. Non esistono ancora account, allegati o backup gestiti dall'app: la cancellazione account e la retention dei backup MongoDB dipendono quindi dal gestore dell'istanza.
+
 ---
 
 ## 🗺️ Struttura delle Rotte & API

@@ -40,6 +40,13 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     expect(res.text).to.include('Nuovo Intervento');
   });
 
+  it('GET /privacy should explain storage and available deletion controls', async function () {
+    const res = await request(app).get('/privacy');
+    expect(res.status).to.equal(200);
+    expect(res.text).to.include('Privacy e gestione dei dati');
+    expect(res.text).to.include('Non esistendo ancora account');
+  });
+
   it('GET /api/status should return 200 with server status', async function () {
     const res = await request(app).get('/api/status');
     expect(res.status).to.equal(200);
