@@ -24,6 +24,9 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/');
     expect(res.status).to.equal(200);
     expect(res.text).to.include('CarMaintenance');
+    expect(res.text).to.include('navbar-layout');
+    expect(res.text).to.include('Veicolo principale');
+    expect(res.text).to.include('footer-bottom');
     expect(res.text).to.include('data-storage-mode="mongodb"');
     expect(res.text).not.to.include('toggle-storage-mode-btn');
   });

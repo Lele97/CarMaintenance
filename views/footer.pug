@@ -1,23 +1,21 @@
 footer.app-footer
   .container-xl
-    .row.align-items-center.gy-3
-      .col-md-4.text-center.text-md-start
-        .d-flex.align-items-center.justify-content-center.justify-content-md-start.gap-2
-          i.bi.bi-wrench-adjustable-circle-fill.text-primary.fs-5
-          span.fw-bold.text-white CarMaintenance
-        p.mb-0.text-muted.small.mt-1 Traccia e conserva lo storico manutenzioni del tuo veicolo.
+    .footer-layout
+      a.footer-brand(href="/" aria-label="CarMaintenance, dashboard")
+        i.bi.bi-wrench-adjustable-circle-fill(aria-hidden="true")
+        span
+          | Car
+          span.brand-accent Maintenance
 
-      .col-md-4.text-center
-        p.mb-1.text-muted.small
-          | Creato con passione da
-          a.text-white.fw-semibold.ms-1(href="https://github.com/Lele97/CarMaintenance" target="_blank" rel="noopener noreferrer")
-            i.bi.bi-github.me-1
-            | Lele97
-        p.mb-0.text-muted.extra-small
-          | Node.js &bull; Express &bull; Browser Storage &bull; MongoDB
+      p.footer-description.mb-0 Traccia e conserva lo storico manutenzioni del tuo veicolo.
 
-      .col-md-4.text-center.text-md-end
-        .d-flex.justify-content-center.justify-content-md-end.gap-3.small
-          a(href="/" title="Dashboard") Dashboard
-          a(href="/add" title="Nuovo Intervento") Nuovo Intervento
-          a(href="https://github.com/Lele97/CarMaintenance" target="_blank" rel="noopener noreferrer") GitHub Repo
+      nav.footer-links(aria-label="Collegamenti rapidi")
+        a(href="/" title="Dashboard") Dashboard
+        a(href="/add" title="Nuovo intervento") Nuovo intervento
+        a(href="https://github.com/Lele97/CarMaintenance" target="_blank" rel="noopener noreferrer")
+          i.bi.bi-github.me-1(aria-hidden="true")
+          | GitHub
+
+    .footer-bottom
+      span CarMaintenance
+      span Manutenzione, senza sorprese.

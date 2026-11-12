@@ -300,12 +300,12 @@ document.addEventListener('DOMContentLoaded', async () => {
               type: 'line',
               label: 'Trend Spesa',
               data: dataValues.length ? dataValues : [0],
-              borderColor: '#2563EB', // Blu
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderColor: '#0F172A',
+              backgroundColor: 'rgba(15, 23, 42, 0.08)',
               tension: 0.35,
               borderWidth: 2.5,
               fill: true,
-              pointBackgroundColor: '#2563EB',
+              pointBackgroundColor: '#0F172A',
               pointRadius: 4
             }
           ]
@@ -337,16 +337,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const catLabels = Object.keys(stats.categoriesMap || {});
       const catValues = Object.values(stats.categoriesMap || {});
 
-      const modernPalette = [
-        '#FF6B00', // Arancione vivace
-        '#2563EB', // Blu tech
-        '#0EA5E9', // Ciano
-        '#F59E0B', // Ambra
-        '#10B981', // Smeraldo
-        '#8B5CF6', // Viola
-        '#EC4899', // Rosa
-        '#64748B'  // Ardesia
-      ];
+      const modernPalette = ['#FF6B00', '#0F172A', '#EA580C', '#475569', '#FDBA74', '#1E293B', '#C2410C', '#94A3B8'];
 
       if (categoryChart) categoryChart.destroy();
 
@@ -393,8 +384,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           datasets: [{
             label: 'Odometro (km)',
             data: kmValues.length ? kmValues : [0],
-            borderColor: '#2563EB',
-            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            borderColor: '#0F172A',
+            backgroundColor: 'rgba(15, 23, 42, 0.08)',
             fill: true,
             tension: 0.3,
             borderWidth: 2.5,
