@@ -10,7 +10,10 @@ on:
       - gitlab
   pull_request:
     branches:
-      -master
+      - master
+
+permissions:
+  contents: read
 
 jobs:
   sync:

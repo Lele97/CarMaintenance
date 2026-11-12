@@ -23,9 +23,6 @@ Thumbs.db
 dist/
 build/
 
-# Optional: blocca il lockfile se preferisci flessibilità di versioni
-# package-lock.json
-
 # Test coverage output
 coverage/
 
@@ -36,5 +33,4 @@ coverage/
 # IntelliJ logs (di tanto in tanto appaiono)
 *.iml
 out/
-/package-lock.json
 .github/agents/*

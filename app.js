@@ -15,6 +15,7 @@ const deleteRouter = require('./routes/delete');
 const apiRouter = require('./routes/api');
 
 const app = express();
+app.locals.appVersion = require('./package.json').version;
 
 // Impostazioni template engine
 app.set('views', path.join(__dirname, 'views'));
