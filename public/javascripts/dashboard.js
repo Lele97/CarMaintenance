@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cardsContainer = document.getElementById('interventions-cards-container');
   const emptyStateEl = document.getElementById('empty-state');
   const itemsCountBadge = document.getElementById('items-count-badge');
+  const odometerWarningsContainer = document.getElementById('odometer-warnings-container');
 
   // KPI elements
   const totalCostEl = document.getElementById('kpi-total-cost');
@@ -108,9 +109,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderTableAndCards(items);
 
     const stats = CarStorage.calculateStats(items);
+    stats.upcoming.push(...getRecordedDueReminders(items, stats.maxKm));
+    renderMileageWarnings(items);
     renderKPIs(stats);
     renderReminders(stats.upcoming);
     renderCharts(stats, items);
+  }
+
+  function renderMileageWarnings(items) {
+    if (!odometerWarningsContainer) return;
+    const warnings = window.findMileageInconsistencies(items);
+    odometerWarningsContainer.classList.toggle('d-none', warnings.length === 0);
+    if (warnings.length === 0) {
+      odometerWarningsContainer.innerHTML = '';
+      return;
+    }
+
+    odometerWarningsContainer.innerHTML = `
+      <div class="alert alert-warning mb-3" role="status">
+        <strong>Letture chilometriche da verificare</strong>
+        <ul class="mb-0 mt-2">
+          ${warnings.map(item => `<li>${formatDate(item.date)}: ${item.kilometri.toLocaleString('it-IT')} km, inferiore alla lettura del ${formatDate(item.precedenteData)} (${item.precedentiKilometri.toLocaleString('it-IT')} km). Lo storico non è stato modificato.</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  function getRecordedDueReminders(items, currentKilometers) {
+    const now = new Date();
+    const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const dayInMilliseconds = 24 * 60 * 60 * 1000;
+
+    return items
+      .filter(item => item.prossimaData || item.prossimiKilometri != null)
+      .map((item) => {
+        const dueDate = item.prossimaData ? new Date(item.prossimaData) : null;
+        const daysRemaining = dueDate
+          ? Math.ceil((Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate()) - todayUtc) / dayInMilliseconds)
+          : null;
+        const kmRemaining = item.prossimiKilometri == null ? null : Number(item.prossimiKilometri) - currentKilometers;
+        const overdue = (daysRemaining !== null && daysRemaining < 0) || (kmRemaining !== null && kmRemaining < 0);
+        const imminent = !overdue && (
+          (daysRemaining !== null && daysRemaining <= 30) ||
+          (kmRemaining !== null && kmRemaining <= 1000)
+        );
+        const deadlines = [];
+
+        if (daysRemaining !== null) deadlines.push(`data ${formatDate(item.prossimaData)}`);
+        if (kmRemaining !== null) deadlines.push(`${Number(item.prossimiKilometri).toLocaleString('it-IT')} km`);
+
+        return {
+          titolo: 'Scadenza registrata',
+          descrizione: `${item.intervento}: ${deadlines.join(' oppure ')}`,
+          status: overdue ? 'scaduto' : (imminent ? 'imminente' : 'ok'),
+          priorita: overdue || imminent ? 'Alta' : 'Bassa'
+        };
+      });
   }
 
   // Rendering Tabella e Cards
@@ -146,6 +200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <td>
               <div class="fw-bold text-slate-900">${escapeHtml(item.intervento)}</div>
               ${item.note ? `<div class="small text-muted text-truncate" style="max-width: 320px;">${escapeHtml(item.note)}</div>` : ''}
+              ${item.officina ? `<div class="small text-muted"><i class="bi bi-shop me-1"></i>${escapeHtml(item.officina)}</div>` : ''}
+              ${item.parti ? `<div class="small text-muted text-truncate" style="max-width: 320px;"><i class="bi bi-gear me-1"></i>${escapeHtml(item.parti)}</div>` : ''}
             </td>
             <td class="text-nowrap fw-medium text-slate-700">${kmFormatted} km</td>
             <td class="text-nowrap fw-bold text-primary">${costoFormatted}</td>
@@ -179,6 +235,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <h6 class="fw-bold text-slate-900 mb-1">${escapeHtml(item.intervento)}</h6>
             ${item.note ? `<p class="small text-muted mb-2">${escapeHtml(item.note)}</p>` : ''}
+            ${item.officina ? `<p class="small text-muted mb-1"><i class="bi bi-shop me-1"></i>${escapeHtml(item.officina)}</p>` : ''}
+            ${item.parti ? `<p class="small text-muted mb-2"><i class="bi bi-gear me-1"></i>${escapeHtml(item.parti)}</p>` : ''}
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
               <span class="text-slate-600 small"><i class="bi bi-speedometer2 me-1"></i><strong>${kmFormatted}</strong> km</span>
               <span class="fw-bold text-primary fs-6">${costoFormatted}</span>
@@ -462,6 +520,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-costo').value = item.costo || '';
     document.getElementById('modal-intervento').value = item.intervento || '';
     document.getElementById('modal-note').value = item.note || '';
+    document.getElementById('modal-officina').value = item.officina || '';
+    document.getElementById('modal-parti').value = item.parti || '';
+    document.getElementById('modal-prossima-data').value = item.prossimaData ? item.prossimaData.slice(0, 10) : '';
+    document.getElementById('modal-prossimi-km').value = item.prossimiKilometri ?? '';
     document.getElementById('modal-veicolo').value = item.veicolo || 'Veicolo Principale';
 
     interventionModal.show();
@@ -480,6 +542,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         costo: Number(document.getElementById('modal-costo').value),
         intervento: document.getElementById('modal-intervento').value.trim(),
         note: document.getElementById('modal-note').value.trim(),
+        officina: document.getElementById('modal-officina').value.trim(),
+        parti: document.getElementById('modal-parti').value.trim(),
+        prossimaData: document.getElementById('modal-prossima-data').value || null,
+        prossimiKilometri: document.getElementById('modal-prossimi-km').value === ''
+          ? null
+          : Number(document.getElementById('modal-prossimi-km').value),
         veicolo: document.getElementById('modal-veicolo').value.trim() || 'Veicolo Principale'
       };
 

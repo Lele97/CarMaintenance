@@ -114,12 +114,38 @@ block content
                 .col-md-6
                   label.form-label.fw-semibold(for="note")
                     i.bi.bi-sticky.me-1.text-primary
-                    |  Note / Officina
+                    |  Note
                   input#note.form-control.custom-input(
                     type="text"
                     name="note"
                     value=(intervention && intervention.note ? intervention.note : '')
                   )
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="officina")
+                    i.bi.bi-shop.me-1.text-primary
+                    |  Officina
+                  input#officina.form-control.custom-input(type="text" name="officina" maxlength="150" value=(intervention && intervention.officina ? intervention.officina : '') class=(errors && errors.officina ? 'is-invalid' : ''))
+                  if errors && errors.officina
+                    .invalid-feedback= errors.officina
+
+                .col-12
+                  label.form-label.fw-semibold(for="parti")
+                    i.bi.bi-gear.me-1.text-primary
+                    |  Parti e ricambi utilizzati
+                  textarea#parti.form-control.custom-input(name="parti" rows="2" maxlength="1500" placeholder="Ricambi, quantità o codici...")=(intervention && intervention.parti ? intervention.parti : '')
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="prossimaData") Prossima scadenza (data)
+                  input#prossimaData.form-control.custom-input(type="date" name="prossimaData" value=(intervention && intervention.prossimaData ? new Date(intervention.prossimaData).toISOString().slice(0, 10) : '') class=(errors && errors.prossimaData ? 'is-invalid' : ''))
+                  if errors && errors.prossimaData
+                    .invalid-feedback= errors.prossimaData
+
+                .col-md-6
+                  label.form-label.fw-semibold(for="prossimiKilometri") Prossima scadenza (km)
+                  input#prossimiKilometri.form-control.custom-input(type="number" name="prossimiKilometri" min="0" max="2000000" step="1" value=(intervention && intervention.prossimiKilometri != null ? intervention.prossimiKilometri : '') class=(errors && errors.prossimiKilometri ? 'is-invalid' : ''))
+                  if errors && errors.prossimiKilometri
+                    .invalid-feedback= errors.prossimiKilometri
 
               .d-flex.align-items-center.justify-content-between.mt-4.pt-3.border-top
                 a.btn.btn-outline-secondary.rounded-pill.px-4(href="/")

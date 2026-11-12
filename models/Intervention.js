@@ -23,7 +23,7 @@ const InterventionSchema = new Schema(
       validate: {
         validator: function (v) {
           if (!v || isNaN(new Date(v).getTime())) return false;
-          const year = new Date(v).getFullYear();
+          const year = new Date(v).getUTCFullYear();
           return year >= 1950 && year <= 2100;
         },
         message: 'La data inserita non è valida'
@@ -77,6 +77,38 @@ const InterventionSchema = new Schema(
       trim: true,
       maxlength: [1000, 'Le note non possono superare 1000 caratteri'],
       default: ''
+    },
+    officina: {
+      type: String,
+      trim: true,
+      maxlength: [150, 'Il nome dell\'officina non può superare 150 caratteri'],
+      default: ''
+    },
+    parti: {
+      type: String,
+      trim: true,
+      maxlength: [1500, 'Le parti utilizzate non possono superare 1.500 caratteri'],
+      default: ''
+    },
+    prossimaData: {
+      type: Date,
+      validate: {
+        validator: (value) => value == null || (
+          !Number.isNaN(new Date(value).getTime()) &&
+          new Date(value).getUTCFullYear() >= 1950 &&
+          new Date(value).getUTCFullYear() <= 2100
+        ),
+        message: 'La data della prossima scadenza non è valida'
+      }
+    },
+    prossimiKilometri: {
+      type: Number,
+      min: [0, 'I chilometri della prossima scadenza non possono essere negativi'],
+      max: [2000000, 'I chilometri della prossima scadenza superano il limite di 2.000.000'],
+      validate: {
+        validator: (value) => value == null || Number.isFinite(value),
+        message: 'I chilometri della prossima scadenza devono essere validi'
+      }
     }
   },
   {
