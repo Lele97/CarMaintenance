@@ -10,6 +10,7 @@ const CarStorage = (() => {
   const DB_VERSION = 1;
   const STORE_NAME = 'interventions';
   const SETTINGS_KEY = 'carmaintenance_settings';
+  const SEEDED_KEY = 'carmaintenance_seeded';
 
   let dbInstance = null;
 
@@ -111,10 +112,14 @@ const CarStorage = (() => {
   async function init() {
     await openIndexedDB();
     const existing = await getAll();
-    if (!existing || existing.length === 0) {
-      for (const item of INITIAL_SEED_DATA) {
-        await add(item);
-      }
+    if (existing.length > 0) {
+      localStorage.setItem(SEEDED_KEY, 'true');
+      return true;
+    }
+
+    if (localStorage.getItem(SEEDED_KEY) !== 'true') {
+      for (const item of INITIAL_SEED_DATA) await add(item);
+      localStorage.setItem(SEEDED_KEY, 'true');
     }
     return true;
   }
@@ -254,6 +259,25 @@ const CarStorage = (() => {
     setLocalItems(filtered);
 
     return true;
+  }
+
+  async function clearAll() {
+    if (dbInstance) {
+      await new Promise((resolve, reject) => {
+        const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).clear();
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('Eliminazione IndexedDB non riuscita'));
+        tx.onabort = () => reject(tx.error || new Error('Eliminazione IndexedDB interrotta'));
+      });
+    }
+
+    try {
+      localStorage.removeItem(STORE_NAME);
+      localStorage.setItem(SEEDED_KEY, 'true');
+    } catch (error) {
+      throw new Error(`Impossibile eliminare i dati locali: ${error.message}`);
+    }
   }
 
   function calculateStats(items = []) {
@@ -439,6 +463,7 @@ const CarStorage = (() => {
     add,
     update,
     remove,
+    clearAll,
     calculateStats,
     exportJSON,
     exportCSV,
