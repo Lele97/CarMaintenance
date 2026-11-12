@@ -24,6 +24,8 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/');
     expect(res.status).to.equal(200);
     expect(res.text).to.include('CarMaintenance');
+    expect(res.text).to.include('data-storage-mode="mongodb"');
+    expect(res.text).not.to.include('toggle-storage-mode-btn');
   });
 
   it('GET /data should return 200 with JSON array', async function () {
@@ -42,6 +44,7 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/api/status');
     expect(res.status).to.equal(200);
     expect(res.body).to.have.property('status', 'ok');
+    expect(res.body).to.have.property('storageMode', 'mongodb');
   });
 
   it('GET /random-not-found-page should return 404', async function () {

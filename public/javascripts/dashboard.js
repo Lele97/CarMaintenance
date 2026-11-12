@@ -40,14 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportImportModalEl = document.getElementById('exportImportModal');
   const exportImportModal = exportImportModalEl ? new bootstrap.Modal(exportImportModalEl) : null;
 
-  // Determina modalità: controlla se il server ha DB connesso oppure se forzato dal client
-  const serverStorageMode = document.body.dataset.storageMode || 'browser';
-  let activeMode = localStorage.getItem('carmaintenance_mode') || serverStorageMode;
+  const activeMode = document.body.dataset.storageMode || 'mongodb';
 
-  updateStorageBadge(activeMode);
-
-  // Inizializza CarStorage
-  await CarStorage.init();
+  if (activeMode === 'browser') {
+    await CarStorage.init();
+  }
 
   // Carica i dati
   await refreshDashboard();
@@ -71,32 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (sortSelect) sortSelect.value = 'date_desc';
       refreshDashboard();
     });
-  }
-
-  // Toggle Modalità Storage
-  const toggleModeBtn = document.getElementById('toggle-storage-mode-btn');
-  if (toggleModeBtn) {
-    toggleModeBtn.addEventListener('click', () => {
-      activeMode = activeMode === 'browser' ? 'mongodb' : 'browser';
-      localStorage.setItem('carmaintenance_mode', activeMode);
-      updateStorageBadge(activeMode);
-      showToast(`Modalità impostata su: ${activeMode === 'browser' ? 'Browser Storage (IndexedDB)' : 'Server (MongoDB)'}`);
-      refreshDashboard();
-    });
-  }
-
-  function updateStorageBadge(mode) {
-    const badge = document.getElementById('storage-mode-indicator');
-    if (!badge) return;
-    if (mode === 'browser') {
-      badge.innerHTML = `<span class="badge-dot bg-warning"></span><i class="bi bi-hdd-fill me-1"></i> Browser Storage`;
-      badge.className = 'badge rounded-pill storage-badge storage-badge-browser';
-      badge.title = 'Tutti i dati sono salvati localmente nel browser (IndexedDB)';
-    } else {
-      badge.innerHTML = `<span class="badge-dot bg-primary"></span><i class="bi bi-database-fill me-1"></i> MongoDB Server`;
-      badge.className = 'badge rounded-pill storage-badge storage-badge-server';
-      badge.title = 'I dati sono sincronizzati con il server MongoDB';
-    }
   }
 
   // Funzione principale di refresh
@@ -126,13 +97,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           sortOrder
         });
         const res = await fetch(`/data?${queryParams.toString()}`);
-        if (res.ok) {
-          items = await res.json();
-        } else {
-          items = await CarStorage.getAll({ search, categoria, sortBy, sortOrder });
-        }
-      } catch {
-        items = await CarStorage.getAll({ search, categoria, sortBy, sortOrder });
+        if (!res.ok) throw new Error(`Richiesta interventi non riuscita (${res.status})`);
+        items = await res.json();
+      } catch (error) {
+        showToast(`Impossibile caricare gli interventi: ${error.message}`, 'danger');
+        return;
       }
     }
 
@@ -466,12 +435,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   async function openEditModal(id) {
-    let item = await CarStorage.getById(id);
-    if (!item && activeMode === 'mongodb') {
+    let item;
+    if (activeMode === 'browser') {
+      item = await CarStorage.getById(id);
+    } else {
       try {
         const res = await fetch(`/api/interventions/${id}`);
-        if (res.ok) item = await res.json();
-      } catch {}
+        if (!res.ok) throw new Error(`Richiesta intervento non riuscita (${res.status})`);
+        item = await res.json();
+      } catch (error) {
+        showToast(`Impossibile caricare l'intervento: ${error.message}`, 'danger');
+        return;
+      }
     }
 
     if (!item) {
@@ -532,9 +507,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             body: JSON.stringify(payload)
           });
           if (!res.ok) throw new Error('Errore server');
-          // Sincronizza anche localmente
-          if (id) await CarStorage.update(id, payload);
-          else await CarStorage.add(payload);
           showToast('Intervento salvato su MongoDB!');
         }
 
@@ -565,7 +537,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             method: 'DELETE',
             headers: { 'Accept': 'application/json' }
           });
-          await CarStorage.remove(itemToDeleteId);
+          if (!res.ok) throw new Error(`Eliminazione non riuscita (${res.status})`);
           showToast('Intervento eliminato dal database');
         }
 
@@ -582,16 +554,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportJsonBtn = document.getElementById('export-json-btn');
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', async () => {
-      await CarStorage.exportJSON();
-      showToast('Dossier scaricato in formato JSON');
+      if (activeMode === 'browser') {
+        await CarStorage.exportJSON();
+        showToast('Dossier scaricato in formato JSON');
+      } else {
+        window.location.assign('/data/export?format=json');
+      }
     });
   }
 
   const exportCsvBtn = document.getElementById('export-csv-btn');
   if (exportCsvBtn) {
     exportCsvBtn.addEventListener('click', async () => {
-      await CarStorage.exportCSV();
-      showToast('Dossier scaricato in formato CSV');
+      if (activeMode === 'browser') {
+        await CarStorage.exportCSV();
+        showToast('Dossier scaricato in formato CSV');
+      } else {
+        window.location.assign('/data/export?format=csv');
+      }
     });
   }
 
@@ -607,13 +587,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const res = await CarStorage.importJSON(e.target.result);
-        if (res.success) {
-          showToast(`Importati ${res.count} interventi con successo!`);
+        try {
+          if (activeMode === 'browser') {
+            const result = await CarStorage.importJSON(e.target.result);
+            if (!result.success) throw new Error(result.error);
+            showToast(`Importati ${result.count} interventi con successo!`);
+          } else {
+            const parsed = JSON.parse(e.target.result);
+            const items = Array.isArray(parsed) ? parsed : parsed.data;
+            if (!Array.isArray(items)) throw new Error('Struttura file non valida');
+
+            let importedCount = 0;
+            for (const item of items) {
+              const response = await fetch('/api/interventions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(item)
+              });
+              if (!response.ok) {
+                const result = await response.json();
+                throw new Error(`${result.error || 'Importazione non riuscita'} (${importedCount} record importati)`);
+              }
+              importedCount++;
+            }
+            showToast(`Importati ${importedCount} interventi con successo!`);
+          }
+
           if (exportImportModal) exportImportModal.hide();
           await refreshDashboard();
-        } else {
-          showToast(`Errore durante l'importazione: ${res.error}`, 'danger');
+        } catch (error) {
+          showToast(`Errore durante l'importazione: ${error.message}`, 'danger');
         }
       };
       reader.readAsText(file);

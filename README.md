@@ -28,16 +28,17 @@ L'applicazione è stata completamente riprogettata con un'interfaccia moderna, f
 
 ## 💾 Architettura Dual-Storage: Sviluppo vs Produzione
 
-Per garantire test reali in ambienti di produzione senza dover configurare o esporre database MongoDB remoti, l'applicazione supporta una **doppia modalità di archiviazione**:
+La modalità di archiviazione è selezionata automaticamente dall'ambiente:
 
-1. **Modalità Sviluppo (`STORAGE_MODE=mongodb`)**:
+1. **Sviluppo e test**:
    * Utilizza il backend Node.js / Express con **MongoDB** e **Mongoose ORM**.
    * Connessione centralizzata in `config/database.js` con mascheramento credenziali nei log e supporto a database di test isolati (`carmaintenance_test`).
-2. **Modalità Produzione (`STORAGE_MODE=browser` o deploy reale)**:
+2. **Produzione**:
    * **Zero dipendenze esterne**: tutti i dati vengono archiviati e gestiti direttamente nel browser dell'utente tramite **IndexedDB** (con fallback su `LocalStorage`).
    * Il client esegue CRUD completo, calcolo statistiche, ricerca, filtri ed esportazione interamente in locale.
    * Include un dataset dimostrativo iniziale pronto all'uso al primo avvio.
-   * Il selettore nella barra di navigazione permette di alternare in qualsiasi momento la modalità attiva per scopi di collaudo o sincronizzazione.
+
+Non è disponibile un selettore: lo storage non può essere cambiato dal browser. Impostare `NODE_ENV=production` abilita lo storage browser; negli altri ambienti viene utilizzato MongoDB.
 
 ---
 
@@ -114,7 +115,6 @@ Parametri configurabili in `.env`:
 * `PORT`: porta del server HTTP (default: `4000`)
 * `HOST`: interfaccia di ascolto (default: `127.0.0.1`)
 * `NODE_ENV`: ambiente (`development`, `production`, `test`)
-* `STORAGE_MODE`: `mongodb` per database server, `browser` per archiviazione locale IndexedDB
 * `MONGODB_URI`: URI di connessione MongoDB
 * `ENABLE_NGROK`: abilita ngrok se impostato su `true`
 

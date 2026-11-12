@@ -6,6 +6,7 @@ const moment = require('moment');
 const interventionService = require('../services/interventionService');
 const { CATEGORIE_VALID } = require('../models/Intervention');
 const { isDBConnected } = require('../config/database');
+const getStorageMode = require('../utils/storageMode');
 
 /* GET dashboard / home page */
 router.get('/', async function (req, res, next) {
@@ -25,7 +26,7 @@ router.get('/', async function (req, res, next) {
     const items = result.items || [];
     const stats = interventionService.calculateStats(items);
 
-    const storageMode = process.env.STORAGE_MODE || (process.env.NODE_ENV === 'production' ? 'browser' : 'mongodb');
+    const storageMode = getStorageMode();
     const isConnected = isDBConnected();
 
     res.render('data', {

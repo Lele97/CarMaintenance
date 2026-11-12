@@ -432,15 +432,6 @@ const CarStorage = (() => {
     URL.revokeObjectURL(url);
   }
 
-  // Modalità Storage preferita (browser o server)
-  function getStorageMode() {
-    return localStorage.getItem('carmaintenance_mode') || 'browser';
-  }
-
-  function setStorageMode(mode) {
-    localStorage.setItem('carmaintenance_mode', mode);
-  }
-
   return {
     init,
     getAll,
@@ -451,14 +442,11 @@ const CarStorage = (() => {
     calculateStats,
     exportJSON,
     exportCSV,
-    importJSON,
-    getStorageMode,
-    setStorageMode
+    importJSON
   };
 })();
 
 // Inizializzazione al caricamento
 if (typeof window !== 'undefined') {
   window.CarStorage = CarStorage;
-  CarStorage.init().catch(console.error);
 }
