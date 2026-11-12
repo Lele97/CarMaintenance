@@ -45,9 +45,18 @@ app.use(methodOverride('_method'));
 
 // Asset statici
 app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
+app.use('/vendor/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
+app.use('/vendor/chart.js', express.static(path.join(__dirname, 'node_modules/chart.js/dist')));
 app.use('/image', express.static(path.join(__dirname, 'public', 'images')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'stylesheets')));
 app.use('/js', express.static(path.join(__dirname, 'public', 'javascripts')));
+app.use('/service-worker.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'service-worker.js'));
+});
+app.use('/manifest.webmanifest', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'manifest.webmanifest'));
+});
 
 // Routing applicazione
 app.use('/api', apiRouter);

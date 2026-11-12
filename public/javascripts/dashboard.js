@@ -39,11 +39,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const exportImportModalEl = document.getElementById('exportImportModal');
   const exportImportModal = exportImportModalEl ? new bootstrap.Modal(exportImportModalEl) : null;
+  const clearBrowserDataBtn = document.getElementById('clear-browser-data-btn');
 
   const activeMode = document.body.dataset.storageMode || 'mongodb';
 
   if (activeMode === 'browser') {
     await CarStorage.init();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(`/service-worker.js?v=${encodeURIComponent(document.body.dataset.appVersion || 'dev')}`)
+        .catch((error) => {
+          console.error('Registrazione modalità offline non riuscita:', error);
+          showToast('La modalità offline non è stata attivata.', 'warning');
+        });
+    }
   }
 
   // Carica i dati
@@ -611,6 +619,23 @@ document.addEventListener('DOMContentLoaded', async () => {
               importedCount++;
             }
             showToast(`Importati ${importedCount} interventi con successo!`);
+          }
+
+          if (clearBrowserDataBtn) {
+            clearBrowserDataBtn.classList.toggle('d-none', activeMode !== 'browser');
+            clearBrowserDataBtn.addEventListener('click', async () => {
+              const confirmed = window.confirm('Eliminare definitivamente tutti gli interventi salvati in questo browser? Esporta prima una copia, se ti serve.');
+              if (!confirmed) return;
+
+              try {
+                await CarStorage.clearAll();
+                showToast('Dati locali eliminati. Il dataset dimostrativo non verrà ripristinato.');
+                if (exportImportModal) exportImportModal.hide();
+                await refreshDashboard();
+              } catch (error) {
+                showToast(`Eliminazione non riuscita: ${error.message}`, 'danger');
+              }
+            });
           }
 
           if (exportImportModal) exportImportModal.hide();

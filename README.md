@@ -130,6 +130,14 @@ npm start
 ```
 Accedi con il browser su **`http://localhost:4000`**.
 
+### Uso offline e privacy
+
+Installare la web app da un browser che supporta PWA e servire il sito su HTTPS (localhost è consentito per sviluppo). In modalità browser la shell e le risorse statiche sono disponibili offline; gli interventi restano nel database del browser e non vengono caricati nella cache HTTP/service worker. L'app non sincronizza dati fra dispositivi e non risolve conflitti: ogni browser conserva il proprio archivio, trasferibile solo con export/import esplicito. La modalità MongoDB richiede la connessione al server.
+
+Bootstrap, Chart.js e icone sono serviti localmente. Google Fonts non è richiesto, quindi i font del sistema vengono utilizzati senza richieste a servizi di terze parti.
+
+La pagina `/privacy` descrive i dati trattati, lo storage e i limiti attuali; il dossier consente export e cancellazione dello storico locale. Non esistono ancora account, allegati o backup gestiti dall'app: la cancellazione account e la retention dei backup MongoDB dipendono quindi dal gestore dell'istanza.
+
 ---
 
 ## 🗺️ Struttura delle Rotte & API
