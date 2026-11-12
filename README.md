@@ -118,6 +118,34 @@ Parametri configurabili in `.env`:
 * `MONGODB_URI`: URI di connessione MongoDB
 * `ENABLE_NGROK`: abilita ngrok se impostato su `true`
 
+## 🚀 Operazioni di produzione
+
+Eseguire l'app su una versione Node.js supportata (18 o successiva) dietro un proxy TLS. In produzione, impostare `NODE_ENV=production`, `HOST=0.0.0.0` solo quando il servizio è isolato da un reverse proxy/firewall, e iniettare `MONGODB_URI` dal secret manager del provider. Non copiare `.env` o credenziali nei log o nel repository. Ngrok viene rifiutato in produzione anche se `ENABLE_NGROK=true`.
+
+* `GET /health/live` controlla il processo senza rivelare dati operativi.
+* `GET /health/ready` restituisce `503` quando MongoDB è richiesto ma non disponibile; in modalità browser la disponibilità del DB non è necessaria.
+* I log HTTP registrano metodo, stato e durata, mai URL, query string o contenuto delle richieste. Configurare inoltre redazione dei segreti e accesso limitato al sistema di log del provider.
+* L'applicazione applica un timeout di selezione MongoDB di 4 secondi e timeout HTTP per richieste e header.
+
+### Backup e ripristino MongoDB
+
+Usare MongoDB Database Tools e un archivio cifrato accessibile solo al servizio. Eseguire un backup prima di ogni aggiornamento e almeno ogni giorno; conservare sette backup giornalieri e quattro settimanali, verificandone periodicamente integrità e accessibilità. La retention deve essere applicata dal sistema di backup gestito, non dal server web.
+
+```bash
+export BACKUP_ARCHIVE="carmaintenance-$(date -u +%Y%m%dT%H%M%SZ).archive.gz"
+mongodump --uri="$MONGODB_URI" --archive="$BACKUP_ARCHIVE" --gzip
+```
+
+Testare il ripristino **in un database isolato**, mai direttamente in produzione:
+
+```bash
+mongorestore --uri="$MONGODB_URI" --archive="$BACKUP_ARCHIVE" --gzip \
+  --nsFrom='carmaintenance.*' --nsTo='carmaintenance_restore_check.*'
+mongosh "$MONGODB_URI" --eval 'db.getSiblingDB("carmaintenance_restore_check").getCollectionNames()'
+```
+
+Verificare il conteggio dei record rispetto al backup e rimuovere il database di prova soltanto dopo la verifica. Registrare data, archivio, operatore e risultato del test senza includere URI o dati personali. Prima di promuovere un rilascio, verificare backup recente, probe di readiness e migrazioni; per il rollback ridistribuire il tag precedente e ripristinare il backup solo se il rollback del codice non è sufficiente. Il workflow CI/release non esegue deploy: collegare il provider dopo aver definito ambiente, credenziali e strategia di rollback.
+
 ### 4. Esecuzione dei Test
 ```bash
 npm run check
@@ -155,6 +183,8 @@ Accedi con il browser su **`http://localhost:4000`**.
 | `PUT` | `/update/:id` | Aggiornamento dell'intervento (supporta `_method=put`) |
 | `DELETE` | `/delete/:id` | Cancellazione dell'intervento (supporta `_method=delete`) |
 | `GET` | `/api/status` | Stato del server, modalità storage e connessione al DB |
+| `GET` | `/health/live` | Probe di liveness senza informazioni sensibili |
+| `GET` | `/health/ready` | Probe di readiness, inclusa la disponibilità MongoDB se richiesta |
 | `GET` | `/api/interventions` | REST API per sincronizzazione con client |
 
 ---

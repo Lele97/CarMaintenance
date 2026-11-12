@@ -7,15 +7,19 @@ const app = require('../app');
 const debug = require('debug')('carmaintenance:server');
 const http = require('http');
 const { connectDB, disconnectDB } = require('../config/database');
+const { isNgrokEnabled } = require('../utils/runtimeConfig');
 
 const port = normalizePort(process.env.PORT || 4000);
 const host = process.env.HOST || '127.0.0.1';
 const startupType = process.env.STARTUP_TYPE || process.env.NODE_ENV || 'development';
-const enableNgrok = process.env.ENABLE_NGROK === 'true';
+const enableNgrok = isNgrokEnabled();
 
 app.set('port', port);
 
 const server = http.createServer(app);
+server.requestTimeout = 30000;
+server.headersTimeout = 35000;
+server.keepAliveTimeout = 5000;
 
 server.on('error', onError);
 server.on('listening', onListening);
@@ -28,7 +32,7 @@ server.on('listening', onListening);
       try {
         await connectDB();
       } catch (dbErr) {
-        console.warn(`⚠️  MongoDB non disponibile (${dbErr.message}). L'applicazione sarà operativa tramite storage browser.`);
+        console.warn('⚠️  MongoDB non disponibile; le richieste che richiedono il database non saranno disponibili.');
       }
     } else {
       console.log(`📦 Modalità storage configurata: ${storageMode}. MongoDB non avviato sul server.`);
