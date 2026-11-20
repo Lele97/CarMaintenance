@@ -1,10 +1,11 @@
 {
   "name": "carmaintenance",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
     "test": "mocha test/*-test.js --exit --exclude test/all-test.js",
+    "check": "node scripts/check-syntax.js",
     "build": "echo '🛠️ Nessuna build necessaria per ora'"
   },
   "dependencies": {

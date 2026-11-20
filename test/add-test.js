@@ -33,11 +33,28 @@ describe('POST /add/insert & /add', function () {
         categoria: 'Tagliando',
         intervento: 'Test Add Cambio Olio',
         kilometri: 105000,
-        costo: 120.5
+        costo: 120.5,
+        officina: 'Officina Test Add',
+        parti: 'Filtro e olio Test Add',
+        prossimaData: '2025-01-15',
+        prossimiKilometri: 120000
       });
 
     expect(res.status).to.equal(302);
     expect(res.header.location).to.equal('/');
+
+    if (Intervention.db?.readyState === 1) {
+      const saved = await Intervention.findOne({ intervento: 'Test Add Cambio Olio' }).lean();
+      expect(saved.officina).to.equal('Officina Test Add');
+      expect(saved.parti).to.equal('Filtro e olio Test Add');
+      expect(saved.prossimaData.toISOString()).to.equal('2025-01-15T00:00:00.000Z');
+      expect(saved.prossimiKilometri).to.equal(120000);
+
+      const exported = await request(app).get('/data/export?format=csv');
+      expect(exported.status).to.equal(200);
+      expect(exported.text).to.include('officina,parti,prossimaData,prossimiKilometri');
+      expect(exported.text).to.include('"Filtro e olio Test Add"');
+    }
   });
 
   it('should return 400 when date or intervento is missing', async function () {

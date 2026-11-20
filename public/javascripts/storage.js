@@ -396,7 +396,7 @@ const CarStorage = (() => {
     const items = await getAll();
     const payload = {
       app: 'CarMaintenance',
-      version: '1.0.0',
+      version: document.body.dataset.appVersion,
       exportedAt: new Date().toISOString(),
       count: items.length,
       data: items
@@ -408,7 +408,7 @@ const CarStorage = (() => {
   // Esportazione CSV
   async function exportCSV() {
     const items = await getAll();
-    const headers = ['id', 'date', 'veicolo', 'categoria', 'intervento', 'kilometri', 'costo', 'note'];
+    const headers = ['id', 'date', 'veicolo', 'categoria', 'intervento', 'kilometri', 'costo', 'note', 'officina', 'parti', 'prossimaData', 'prossimiKilometri'];
     const rows = items.map(i => [
       i.id || i._id,
       new Date(i.date).toISOString().slice(0, 10),
@@ -417,7 +417,11 @@ const CarStorage = (() => {
       `"${(i.intervento || '').replace(/"/g, '""')}"`,
       i.kilometri || 0,
       i.costo || 0,
-      `"${(i.note || '').replace(/"/g, '""')}"`
+      `"${(i.note || '').replace(/"/g, '""')}"`,
+      `"${(i.officina || '').replace(/"/g, '""')}"`,
+      `"${(i.parti || '').replace(/"/g, '""')}"`,
+      i.prossimaData ? new Date(i.prossimaData).toISOString().slice(0, 10) : '',
+      i.prossimiKilometri == null ? '' : i.prossimiKilometri
     ].join(','));
 
     const csv = [headers.join(','), ...rows].join('\n');

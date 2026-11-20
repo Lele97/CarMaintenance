@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const interventionService = require('../services/interventionService');
 const { isDBConnected } = require('../config/database');
+const appVersion = require('../package.json').version;
 
 // GET /data - Lista tutti gli interventi in JSON
 router.get('/', async function (req, res, next) {
@@ -47,7 +48,7 @@ router.get('/export', async function (req, res, next) {
     const items = await interventionService.getAllSimple();
 
     if (format === 'csv') {
-      const headers = ['id', 'date', 'veicolo', 'categoria', 'intervento', 'kilometri', 'costo', 'note'];
+      const headers = ['id', 'date', 'veicolo', 'categoria', 'intervento', 'kilometri', 'costo', 'note', 'officina', 'parti', 'prossimaData', 'prossimiKilometri'];
       const rows = items.map(i => [
         i._id,
         new Date(i.date).toISOString().slice(0, 10),
@@ -56,7 +57,11 @@ router.get('/export', async function (req, res, next) {
         `"${(i.intervento || '').replace(/"/g, '""')}"`,
         i.kilometri || 0,
         i.costo || 0,
-        `"${(i.note || '').replace(/"/g, '""')}"`
+        `"${(i.note || '').replace(/"/g, '""')}"`,
+        `"${(i.officina || '').replace(/"/g, '""')}"`,
+        `"${(i.parti || '').replace(/"/g, '""')}"`,
+        i.prossimaData ? new Date(i.prossimaData).toISOString().slice(0, 10) : '',
+        i.prossimiKilometri == null ? '' : i.prossimiKilometri
       ].join(','));
 
       const csvContent = [headers.join(','), ...rows].join('\n');
@@ -70,7 +75,7 @@ router.get('/export', async function (req, res, next) {
     res.setHeader('Content-Disposition', `attachment; filename="carmaintenance-export-${new Date().toISOString().slice(0, 10)}.json"`);
     res.status(200).json({
       app: 'CarMaintenance',
-      version: '1.0.0',
+      version: appVersion,
       exportedAt: new Date().toISOString(),
       count: items.length,
       data: items

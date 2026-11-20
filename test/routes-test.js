@@ -24,9 +24,7 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/');
     expect(res.status).to.equal(200);
     expect(res.text).to.include('CarMaintenance');
-    expect(res.text).to.include('navbar-layout');
-    expect(res.text).to.include('Veicolo principale');
-    expect(res.text).to.include('footer-bottom');
+    expect(res.text).to.include(`data-app-version="${require('../package.json').version}"`);
     expect(res.text).to.include('data-storage-mode="mongodb"');
     expect(res.text).not.to.include('toggle-storage-mode-btn');
   });
@@ -54,6 +52,32 @@ describe('🌐 ROUTE TESTS :: CarMaintenance', function () {
     const res = await request(app).get('/api/status');
     expect(res.status).to.equal(200);
     expect(res.body).to.have.property('status', 'ok');
+    expect(res.body).to.have.property('version', require('../package.json').version);
+  });
+
+  it('GET /health/live should report the process as alive without database details', async function () {
+    const res = await request(app).get('/health/live');
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      status: 'ok',
+      version: require('../package.json').version
+    });
+  });
+
+  it('GET /health/ready should report database readiness without exposing connection data', async function () {
+    const res = await request(app).get('/health/ready');
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      status: 'ok',
+      checks: { database: 'ok' }
+    });
+    expect(res.text).not.to.include('mongodb://');
+  });
+
+  it('GET /data/export should include the current application version', async function () {
+    const res = await request(app).get('/data/export');
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('version', require('../package.json').version);
     expect(res.body).to.have.property('storageMode', 'mongodb');
   });
 

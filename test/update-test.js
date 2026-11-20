@@ -74,11 +74,20 @@ describe('PUT & POST /update/:id', function () {
         categoria: 'Freni',
         intervento: 'Test Fixture Freni Aggiornati',
         kilometri: 82000,
-        costo: 180
+        costo: 180,
+        officina: 'Officina aggiornata',
+        parti: 'Pastiglie nuove',
+        prossimaData: '2026-02-02',
+        prossimiKilometri: 112000
       });
 
     expect(res.status).to.equal(302);
     expect(res.header.location).to.equal('/');
+    const updated = await Intervention.findById(createdId).lean();
+    expect(updated.officina).to.equal('Officina aggiornata');
+    expect(updated.parti).to.equal('Pastiglie nuove');
+    expect(updated.prossimaData.toISOString()).to.equal('2026-02-02T00:00:00.000Z');
+    expect(updated.prossimiKilometri).to.equal(112000);
   });
 
   it('should return 400 when updating with invalid data', async function () {

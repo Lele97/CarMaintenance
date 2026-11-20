@@ -5,6 +5,7 @@ const router = express.Router();
 const interventionService = require('../services/interventionService');
 const { validateInterventionPayload } = require('../utils/validator');
 const { isDBConnected, getSanitizedUri, getDatabaseUri } = require('../config/database');
+const appVersion = require('../package.json').version;
 const getStorageMode = require('../utils/storageMode');
 
 // GET /api/status
@@ -12,7 +13,7 @@ router.get('/status', (req, res) => {
   res.json({
     status: 'ok',
     app: 'CarMaintenance',
-    version: '1.0.0',
+    version: appVersion,
     env: process.env.NODE_ENV || 'development',
     storageMode: getStorageMode(),
     isDBConnected: isDBConnected(),

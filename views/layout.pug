@@ -12,7 +12,7 @@ html(lang="it")
     link(href="/bootstrap-icons/bootstrap-icons.css" rel="stylesheet")
     link(rel="stylesheet" href="/css/style.css")
 
-  body.wrapper(data-storage-mode=(storageMode || 'mongodb'))
+  body.wrapper(data-storage-mode=(storageMode || 'mongodb') data-app-version=appVersion)
     include header
 
     main.flex-grow-1
@@ -20,7 +20,13 @@ html(lang="it")
 
     include footer
 
-    script(src="/vendor/bootstrap/js/bootstrap.bundle.min.js")
-    script(src="/vendor/chart.js/chart.umd.min.js")
+    // Bootstrap JS
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
+
+    // Chart.js per visualizzazioni e statistiche
+    script(src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js")
+
+    // Browser Storage Engine & Dashboard scripts
+    script(src="/js/mileageReadings.js")
     script(src="/js/storage.js")
     script(src="/js/dashboard.js")

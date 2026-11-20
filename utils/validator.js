@@ -2,6 +2,16 @@
 
 const { CATEGORIE_VALID } = require('../models/Intervention');
 
+function parseCalendarDate(value) {
+  const raw = String(value).trim();
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+  const parsed = new Date(dateOnly ? `${raw}T00:00:00.000Z` : raw);
+
+  if (Number.isNaN(parsed.getTime())) return null;
+  if (dateOnly && parsed.toISOString().slice(0, 10) !== raw) return null;
+  return parsed;
+}
+
 function validateInterventionPayload(body) {
   const errors = {};
   const cleaned = {};
@@ -10,11 +20,11 @@ function validateInterventionPayload(body) {
   if (!body.date || String(body.date).trim() === '') {
     errors.date = 'La data dell\'intervento è obbligatoria';
   } else {
-    const parsedDate = new Date(body.date);
-    if (isNaN(parsedDate.getTime())) {
+    const parsedDate = parseCalendarDate(body.date);
+    if (!parsedDate) {
       errors.date = 'Formato data non valido (utilizzare AAAA-MM-GG)';
     } else {
-      const year = parsedDate.getFullYear();
+      const year = parsedDate.getUTCFullYear();
       if (year < 1950 || year > 2100) {
         errors.date = 'L\'anno deve essere compreso tra il 1950 e il 2100';
       } else {
@@ -92,6 +102,40 @@ function validateInterventionPayload(body) {
     cleaned.note = String(body.note).trim().slice(0, 1000);
   } else {
     cleaned.note = '';
+  }
+
+  for (const [field, maximum, label] of [
+    ['officina', 150, 'Il nome dell\'officina'],
+    ['parti', 1500, 'Le parti utilizzate']
+  ]) {
+    const value = body[field] == null ? '' : String(body[field]).trim();
+    if (value.length > maximum) {
+      errors[field] = `${label} non può superare ${maximum} caratteri`;
+    } else {
+      cleaned[field] = value;
+    }
+  }
+
+  if (body.prossimaData != null && String(body.prossimaData).trim() !== '') {
+    const nextDate = parseCalendarDate(body.prossimaData);
+    if (!nextDate || nextDate.getUTCFullYear() < 1950 || nextDate.getUTCFullYear() > 2100) {
+      errors.prossimaData = 'La data della prossima scadenza deve essere valida e compresa tra il 1950 e il 2100';
+    } else {
+      cleaned.prossimaData = nextDate;
+    }
+  } else {
+    cleaned.prossimaData = null;
+  }
+
+  if (body.prossimiKilometri != null && String(body.prossimiKilometri).trim() !== '') {
+    const nextKm = Number(body.prossimiKilometri);
+    if (!Number.isFinite(nextKm) || nextKm < 0 || nextKm > 2000000) {
+      errors.prossimiKilometri = 'I chilometri della prossima scadenza devono essere compresi tra 0 e 2.000.000';
+    } else {
+      cleaned.prossimiKilometri = Math.round(nextKm);
+    }
+  } else {
+    cleaned.prossimiKilometri = null;
   }
 
   return {
