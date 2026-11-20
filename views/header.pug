@@ -1,39 +1,27 @@
 header.app-navbar
   .container-xl
-    .d-flex.flex-wrap.align-items-center.justify-content-between.gap-3
-      // Logo & Brand
-      a.brand-title(href="/" title="Vai alla Dashboard")
-        i.bi.bi-speedometer2.text-primary.fs-4
+    .navbar-layout
+      .vehicle-pill(aria-label="Veicolo selezionato")
+        i.bi.bi-car-front-fill.me-2(aria-hidden="true")
+        span Veicolo principale
+
+      a.brand-title(href="/" title="Vai alla Dashboard" aria-label="CarMaintenance, dashboard")
+        i.bi.bi-speedometer2(aria-hidden="true")
         span
           | Car
           span.brand-accent Maintenance
           span.brand-dot
 
-      // Centered Vehicle & Storage Badge
-      .d-flex.align-items-center.gap-2.d-none.d-md-flex
-        .vehicle-pill
-          i.bi.bi-car-front-fill.text-primary.me-2
-          span.fw-bold Volkswagen Golf 7
-        span.badge.rounded-pill.storage-badge(class=(storageMode === 'browser' ? 'storage-badge-browser' : 'storage-badge-server'))
-          span.badge-dot(class=(storageMode === 'browser' ? 'bg-warning' : 'bg-primary'))
-          i.bi.me-1(class=(storageMode === 'browser' ? 'bi-hdd-fill' : 'bi-database-fill'))
-          = storageMode === 'browser' ? ' Browser Storage' : ' MongoDB Server'
-
-      // Navigation Actions
-      .d-flex.align-items-center.gap-2
+      nav.navbar-actions(aria-label="Azioni rapide")
         button.btn.btn-sm.btn-nav-secondary.rounded-pill.px-3(
           type="button"
           data-bs-toggle="modal"
           data-bs-target="#exportImportModal"
           title="Esporta o importa dossier manutenzioni"
         )
-          i.bi.bi-arrow-down-up.me-1
-          span.d-none.d-sm-inline Dossier
+          i.bi.bi-arrow-down-up.me-1(aria-hidden="true")
+          span Dossier
 
-        button.btn.btn-sm.btn-nav-primary.rounded-pill.px-3(
-          type="button"
-          onclick="window.openNewModal ? window.openNewModal() : window.location.href='/add'"
-          title="Inserisci nuovo intervento"
-        )
-          i.bi.bi-plus-lg.me-1
-          |  Nuovo Intervento
+        a.btn.btn-sm.btn-nav-primary.rounded-pill.px-3(href="/add" title="Inserisci nuovo intervento")
+          i.bi.bi-plus-lg.me-1(aria-hidden="true")
+          span Nuovo

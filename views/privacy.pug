@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  .container-xl.py-5
+    article.custom-form-card.p-4.p-md-5
+      h1.h3.fw-bold.mb-3 Privacy e gestione dei dati
+      p.text-muted.mb-4 Informazioni su quali dati tratta CarMaintenance e su come esportarli o rimuoverli.
+
+      h2.h5.fw-bold Dati trattati
+      p Lo storico può contenere data, categoria, descrizione, chilometraggio, costo, nome del veicolo e note inserite dall'utente. Non sono richiesti VIN, targa, account o documenti allegati.
+
+      h2.h5.fw-bold.mt-4 Dove vengono conservati
+      if storageMode === 'browser'
+        p In questa modalità i dati restano nell'IndexedDB o nel LocalStorage del browser su questo dispositivo. Non vengono sincronizzati con un account né inviati a un server dall'applicazione.
+      else
+        p In questa modalità lo storico è conservato nel MongoDB configurato dal gestore dell'istanza. L'app non offre ancora account né separazione dei dati tra utenti: non esporre questa modalità a utenti non fidati finché non sarà disponibile l'autenticazione.
+
+      h2.h5.fw-bold.mt-4 Servizi esterni, log e notifiche
+      p L'app non invia notifiche e non integra provider esterni per i dati di manutenzione. Le risorse frontend sono servite dall'applicazione. I log non devono contenere descrizioni, note, identificativi o credenziali.
+
+      h2.h5.fw-bold.mt-4 Esportazione e cancellazione
+      p Usa il dossier per scaricare una copia JSON o CSV. In modalità browser, la stessa finestra consente di eliminare tutti gli interventi locali; l'operazione non elimina dati esportati o copie di backup.
+      p.mb-0 Non esistendo ancora account, l'eliminazione dell'account e dei relativi backup non è disponibile. In modalità MongoDB la cancellazione dei dati deve essere eseguita dal gestore dell'istanza secondo la propria retention e le policy di backup.

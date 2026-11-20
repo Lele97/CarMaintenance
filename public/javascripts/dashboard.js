@@ -40,11 +40,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const exportImportModalEl = document.getElementById('exportImportModal');
   const exportImportModal = exportImportModalEl ? new bootstrap.Modal(exportImportModalEl) : null;
+  const clearBrowserDataBtn = document.getElementById('clear-browser-data-btn');
 
   const activeMode = document.body.dataset.storageMode || 'mongodb';
 
   if (activeMode === 'browser') {
     await CarStorage.init();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(`/service-worker.js?v=${encodeURIComponent(document.body.dataset.appVersion || 'dev')}`)
+        .catch((error) => {
+          console.error('Registrazione modalità offline non riuscita:', error);
+          showToast('La modalità offline non è stata attivata.', 'warning');
+        });
+    }
   }
 
   // Carica i dati
@@ -358,12 +366,12 @@ document.addEventListener('DOMContentLoaded', async () => {
               type: 'line',
               label: 'Trend Spesa',
               data: dataValues.length ? dataValues : [0],
-              borderColor: '#2563EB', // Blu
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderColor: '#0F172A',
+              backgroundColor: 'rgba(15, 23, 42, 0.08)',
               tension: 0.35,
               borderWidth: 2.5,
               fill: true,
-              pointBackgroundColor: '#2563EB',
+              pointBackgroundColor: '#0F172A',
               pointRadius: 4
             }
           ]
@@ -395,16 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const catLabels = Object.keys(stats.categoriesMap || {});
       const catValues = Object.values(stats.categoriesMap || {});
 
-      const modernPalette = [
-        '#FF6B00', // Arancione vivace
-        '#2563EB', // Blu tech
-        '#0EA5E9', // Ciano
-        '#F59E0B', // Ambra
-        '#10B981', // Smeraldo
-        '#8B5CF6', // Viola
-        '#EC4899', // Rosa
-        '#64748B'  // Ardesia
-      ];
+      const modernPalette = ['#FF6B00', '#0F172A', '#EA580C', '#475569', '#FDBA74', '#1E293B', '#C2410C', '#94A3B8'];
 
       if (categoryChart) categoryChart.destroy();
 
@@ -451,8 +450,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           datasets: [{
             label: 'Odometro (km)',
             data: kmValues.length ? kmValues : [0],
-            borderColor: '#2563EB',
-            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            borderColor: '#0F172A',
+            backgroundColor: 'rgba(15, 23, 42, 0.08)',
             fill: true,
             tension: 0.3,
             borderWidth: 2.5,
@@ -679,6 +678,23 @@ document.addEventListener('DOMContentLoaded', async () => {
               importedCount++;
             }
             showToast(`Importati ${importedCount} interventi con successo!`);
+          }
+
+          if (clearBrowserDataBtn) {
+            clearBrowserDataBtn.classList.toggle('d-none', activeMode !== 'browser');
+            clearBrowserDataBtn.addEventListener('click', async () => {
+              const confirmed = window.confirm('Eliminare definitivamente tutti gli interventi salvati in questo browser? Esporta prima una copia, se ti serve.');
+              if (!confirmed) return;
+
+              try {
+                await CarStorage.clearAll();
+                showToast('Dati locali eliminati. Il dataset dimostrativo non verrà ripristinato.');
+                if (exportImportModal) exportImportModal.hide();
+                await refreshDashboard();
+              } catch (error) {
+                showToast(`Eliminazione non riuscita: ${error.message}`, 'danger');
+              }
+            });
           }
 
           if (exportImportModal) exportImportModal.hide();

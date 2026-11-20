@@ -1,6 +1,6 @@
 /**
  * CarMaintenance - Modern Design System
- * Palette: Bianco (#FFFFFF), Nero/Ardesia (#090D16, #0F172A), Arancione (#FF6B00), Blu (#2563EB)
+ * Palette: Bianco (#FFFFFF), Nero/Ardesia (#090D16, #0F172A), Arancione (#FF6B00)
  * Ispirato a Shadcn Dashboard UI e template di ingegneria moderna
  */
 
@@ -27,11 +27,11 @@
   --cm-orange-border: #ffedd5;
   --cm-orange-glow: rgba(255, 107, 0, 0.2);
 
-  --cm-blue: #2563eb;
-  --cm-blue-hover: #1d4ed8;
-  --cm-blue-light: #eff6ff;
-  --cm-blue-border: #dbeafe;
-  --cm-blue-glow: rgba(37, 99, 235, 0.2);
+  --cm-blue: #ea580c;
+  --cm-blue-hover: #c2410c;
+  --cm-blue-light: #fff7ed;
+  --cm-blue-border: #fed7aa;
+  --cm-blue-glow: rgba(234, 88, 12, 0.2);
 
   --cm-radius-sm: 6px;
   --cm-radius-md: 10px;
@@ -41,7 +41,7 @@
   --cm-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --cm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
   --cm-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  --cm-shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+  --cm-shadow-glow: 0 0 20px rgba(234, 88, 12, 0.15);
 }
 
 /* Base & Typography */
@@ -52,6 +52,24 @@ body {
   color: var(--cm-slate-800);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+.text-primary {
+  color: var(--cm-orange) !important;
+}
+
+.bg-primary {
+  background-color: var(--cm-orange) !important;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--cm-orange-hover);
+  --bs-btn-border-color: var(--cm-orange);
+  --bs-btn-hover-bg: var(--cm-orange);
+  --bs-btn-hover-border-color: var(--cm-orange);
+  --bs-btn-active-bg: var(--cm-orange-hover);
+  --bs-btn-active-border-color: var(--cm-orange-hover);
+  --bs-btn-focus-shadow-rgb: 234, 88, 12;
 }
 
 .wrapper {
@@ -71,6 +89,13 @@ body {
   z-index: 1030;
 }
 
+.navbar-layout {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
 .brand-title {
   color: var(--cm-white);
   font-weight: 800;
@@ -80,6 +105,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
+  justify-self: center;
 }
 
 .brand-accent {
@@ -90,7 +116,7 @@ body {
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: var(--cm-blue);
+  background-color: var(--cm-orange);
   border-radius: 50%;
   margin-left: 2px;
 }
@@ -117,13 +143,13 @@ body {
 }
 
 .storage-badge-server {
-  background-color: rgba(37, 99, 235, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(37, 99, 235, 0.35);
+  background-color: rgba(255, 107, 0, 0.15);
+  color: #ff9100;
+  border: 1px solid rgba(255, 107, 0, 0.35);
 }
 
 .storage-badge-server:hover {
-  background-color: rgba(37, 99, 235, 0.25);
+  background-color: rgba(255, 107, 0, 0.25);
 }
 
 .badge-dot {
@@ -168,16 +194,41 @@ body {
 }
 
 .vehicle-pill {
-  background-color: var(--cm-white);
-  border: 1px solid var(--cm-card-border);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--cm-radius-full);
   padding: 0.35rem 0.85rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--cm-slate-700);
-  box-shadow: var(--cm-shadow-sm);
+  color: var(--cm-white);
   display: inline-flex;
   align-items: center;
+}
+
+.vehicle-pill i {
+  color: var(--cm-orange);
+}
+
+.navbar-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.dashboard-kicker {
+  display: inline-flex;
+  align-items: center;
+  color: var(--cm-slate-600);
+  background: var(--cm-white);
+  border: 1px solid var(--cm-card-border);
+  border-radius: var(--cm-radius-full);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.dashboard-kicker i {
+  color: var(--cm-orange);
 }
 
 /* Shadcn-inspired Cards */
@@ -201,6 +252,26 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.kpi-card:first-child {
+  background: var(--cm-black);
+  border-color: var(--cm-black);
+}
+
+.kpi-card:first-child .kpi-title,
+.kpi-card:first-child .kpi-value,
+.kpi-card:first-child .text-muted {
+  color: var(--cm-white) !important;
+}
+
+.kpi-card:first-child .kpi-title {
+  opacity: 0.72;
+}
+
+.kpi-card:first-child .kpi-icon-wrap {
+  background: rgba(255, 107, 0, 0.18);
+  color: #ff8a36;
 }
 
 .kpi-title {
@@ -457,6 +528,47 @@ body {
   margin-top: auto;
 }
 
+.footer-layout {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--cm-white) !important;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.footer-brand i {
+  color: var(--cm-orange);
+  font-size: 1.25rem;
+}
+
+.footer-description {
+  color: var(--cm-slate-400);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--cm-slate-500);
+  font-size: 0.75rem;
+}
+
 .app-footer a {
   color: var(--cm-slate-400);
   text-decoration: none;
@@ -488,6 +600,48 @@ body {
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
+  .navbar-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .brand-title {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    font-size: 1.1rem;
+  }
+
+  .vehicle-pill {
+    justify-self: start;
+    font-size: 0.75rem;
+  }
+
+  .navbar-actions {
+    justify-self: end;
+  }
+
+  .navbar-actions .btn {
+    padding-right: 0.75rem !important;
+    padding-left: 0.75rem !important;
+  }
+
+  .dashboard-header {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .footer-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
   .chart-canvas-wrap {
     height: 220px;
   }

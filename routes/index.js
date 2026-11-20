@@ -9,6 +9,13 @@ const { isDBConnected } = require('../config/database');
 const getStorageMode = require('../utils/storageMode');
 
 /* GET dashboard / home page */
+router.get('/privacy', (req, res) => {
+  res.render('privacy', {
+    title: 'Privacy e dati - CarMaintenance',
+    storageMode: getStorageMode()
+  });
+});
+
 router.get('/', async function (req, res, next) {
   try {
     const { search, categoria, veicolo, sortBy, sortOrder, page } = req.query;
